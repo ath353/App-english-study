@@ -16,6 +16,27 @@ type DictionaryEntry = {
   meanings?: DictionaryMeaning[];
 };
 
+async function translateToVietnamese(text: string): Promise<string> {
+  if (!text) return "";
+
+  try {
+    const res = await fetch(
+      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|vi`,
+    );
+    if (!res.ok) return "";
+
+    const data = await res.json();
+    const translated: string = data?.responseData?.translatedText ?? "";
+
+    // MyMemory trả về text cảnh báo (không phải bản dịch) khi hết lượt miễn phí trong ngày
+    if (translated.toUpperCase().includes("MYMEMORY WARNING")) return "";
+
+    return translated;
+  } catch {
+    return "";
+  }
+}
+
 export async function GET(request: NextRequest) {
   const word = request.nextUrl.searchParams.get("word")?.trim();
 
@@ -40,21 +61,25 @@ export async function GET(request: NextRequest) {
   const ipa =
     entry?.phonetic || entry?.phonetics?.find((p) => p.text)?.text || "";
 
-  let meaning = "";
   let example = "";
   for (const m of entry?.meanings ?? []) {
     for (const d of m.definitions ?? []) {
-      if (!meaning && d.definition) meaning = d.definition;
       if (!example && d.example) example = d.example;
-      if (meaning && example) break;
+      if (example) break;
     }
-    if (meaning && example) break;
+    if (example) break;
   }
+
+  const [meaning, exampleTranslation] = await Promise.all([
+    translateToVietnamese(word),
+    translateToVietnamese(example),
+  ]);
 
   return NextResponse.json({
     term: entry?.word ?? word,
     ipa: ipa.replace(/^\/|\/$/g, ""),
     meaning,
     example,
+    exampleTranslation,
   });
 }

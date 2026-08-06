@@ -4,7 +4,13 @@ import { useState, useTransition } from "react";
 
 import { createWord } from "@/lib/actions/words";
 
-const emptyFields = { term: "", meaning: "", ipa: "", example: "" };
+const emptyFields = {
+  term: "",
+  meaning: "",
+  ipa: "",
+  example: "",
+  exampleTranslation: "",
+};
 
 export function WordForm() {
   const [fields, setFields] = useState(emptyFields);
@@ -32,6 +38,7 @@ export function WordForm() {
         meaning: data.meaning || f.meaning,
         ipa: data.ipa || f.ipa,
         example: data.example || f.example,
+        exampleTranslation: data.exampleTranslation || f.exampleTranslation,
       }));
     } catch {
       setLookupError("Có lỗi khi tra từ điển, thử lại sau.");
@@ -79,7 +86,7 @@ export function WordForm() {
         name="meaning"
         value={fields.meaning}
         onChange={(e) => setFields((f) => ({ ...f, meaning: e.target.value }))}
-        placeholder="Nghĩa (vd: quả táo — hoặc định nghĩa tiếng Anh tự điền)"
+        placeholder="Nghĩa tiếng Việt (vd: quả táo)"
         required
         className="rounded border border-gray-300 px-3 py-2"
       />
@@ -94,7 +101,17 @@ export function WordForm() {
         name="example"
         value={fields.example}
         onChange={(e) => setFields((f) => ({ ...f, example: e.target.value }))}
-        placeholder="Câu ví dụ"
+        placeholder="Câu ví dụ (tiếng Anh)"
+        rows={2}
+        className="rounded border border-gray-300 px-3 py-2"
+      />
+      <textarea
+        name="exampleTranslation"
+        value={fields.exampleTranslation}
+        onChange={(e) =>
+          setFields((f) => ({ ...f, exampleTranslation: e.target.value }))
+        }
+        placeholder="Dịch nghĩa câu ví dụ (tiếng Việt)"
         rows={2}
         className="rounded border border-gray-300 px-3 py-2"
       />

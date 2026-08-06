@@ -10,6 +10,7 @@ type Word = {
   meaning: string;
   ipa: string | null;
   example: string | null;
+  exampleTranslation: string | null;
 };
 
 export function WordList({ words }: { words: Word[] }) {
@@ -59,7 +60,14 @@ export function WordList({ words }: { words: Word[] }) {
               <textarea
                 name="example"
                 defaultValue={word.example ?? ""}
-                placeholder="Câu ví dụ"
+                placeholder="Câu ví dụ (tiếng Anh)"
+                rows={2}
+                className="rounded border border-gray-300 px-3 py-2"
+              />
+              <textarea
+                name="exampleTranslation"
+                defaultValue={word.exampleTranslation ?? ""}
+                placeholder="Dịch nghĩa câu ví dụ (tiếng Việt)"
                 rows={2}
                 className="rounded border border-gray-300 px-3 py-2"
               />
@@ -115,6 +123,11 @@ export function WordList({ words }: { words: Word[] }) {
               <p>{word.meaning}</p>
               {word.example && (
                 <p className="text-sm italic text-gray-500">{word.example}</p>
+              )}
+              {word.exampleTranslation && (
+                <p className="text-sm italic text-gray-400">
+                  {word.exampleTranslation}
+                </p>
               )}
             </div>
           )}
