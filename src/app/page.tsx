@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { auth, signIn, signOut } from "@/lib/auth";
 
 export default async function Home() {
@@ -20,6 +22,12 @@ export default async function Home() {
           <p>
             Xin chào, <span className="font-semibold">{session.user.name}</span>
           </p>
+          <Link
+            href="/words"
+            className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+          >
+            Quản lý từ vựng
+          </Link>
           <form
             action={async () => {
               "use server";

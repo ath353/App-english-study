@@ -10,4 +10,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: {
     strategy: "database",
   },
+  callbacks: {
+    session({ session, user }) {
+      session.user.id = user.id;
+      return session;
+    },
+  },
 });
