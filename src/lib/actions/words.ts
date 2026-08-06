@@ -62,3 +62,28 @@ export async function deleteWord(id: string) {
   await prisma.word.deleteMany({ where: { id, userId } });
   revalidatePath("/words");
 }
+
+const STATUS_ORDER = ["NEW", "LEARNING", "KNOWN"] as const;
+
+export async function reviewWord(id: string, remembered: boolean) {
+  const userId = await requireUserId();
+  const word = await prisma.word.findFirst({ where: { id, userId } });
+  if (!word) return;
+
+  const newStatus = remembered
+    ? STATUS_ORDER[
+        Math.min(
+          STATUS_ORDER.indexOf(word.status) + 1,
+          STATUS_ORDER.length - 1,
+        )
+      ]
+    : "NEW";
+
+  await prisma.word.update({
+    where: { id },
+    data: { status: newStatus, lastReviewedAt: new Date() },
+  });
+
+  revalidatePath("/review");
+  revalidatePath("/words");
+}

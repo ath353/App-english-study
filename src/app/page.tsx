@@ -22,12 +22,20 @@ export default async function Home() {
           <p>
             Xin chào, <span className="font-semibold">{session.user.name}</span>
           </p>
-          <Link
-            href="/words"
-            className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
-          >
-            Quản lý từ vựng
-          </Link>
+          <div className="flex gap-3">
+            <Link
+              href="/words"
+              className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+            >
+              Quản lý từ vựng
+            </Link>
+            <Link
+              href="/review"
+              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            >
+              Ôn tập
+            </Link>
+          </div>
           <form
             action={async () => {
               "use server";
