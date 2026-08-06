@@ -39,6 +39,14 @@ yarn-error.log*
 # claude code local settings
 .claude/settings.local.json
 
+# AI agent skill docs auto-installed by `prisma init` (không phải code của app)
+.agents/
+.claude/skills/
+.windsurf/
+skills-lock.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma
