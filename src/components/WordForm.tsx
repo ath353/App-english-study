@@ -4,15 +4,28 @@ import { useState, useTransition } from "react";
 
 import { createWord } from "@/lib/actions/words";
 
-const emptyFields = {
-  term: "",
-  meaning: "",
-  ipa: "",
-  example: "",
-  exampleTranslation: "",
-};
+type Lesson = { id: string; name: string };
 
-export function WordForm() {
+const inputClass =
+  "rounded-lg border border-slate-300 px-3 py-2 text-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
+
+const labelClass = "text-sm font-medium text-slate-700";
+
+export function WordForm({
+  lessons,
+  defaultLessonId,
+}: {
+  lessons: Lesson[];
+  defaultLessonId?: string;
+}) {
+  const emptyFields = {
+    term: "",
+    meaning: "",
+    ipa: "",
+    example: "",
+    exampleTranslation: "",
+    lessonId: defaultLessonId ?? "",
+  };
   const [fields, setFields] = useState(emptyFields);
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
@@ -52,74 +65,128 @@ export function WordForm() {
     const formData = new FormData(e.currentTarget);
     startTransition(async () => {
       await createWord(formData);
-      setFields(emptyFields);
+      setFields((f) => ({ ...emptyFields, lessonId: f.lessonId }));
     });
   }
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-2 rounded-md border border-gray-300 p-4"
+      className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
     >
-      <div className="flex gap-2">
-        <input
-          name="term"
-          value={fields.term}
-          onChange={(e) => setFields((f) => ({ ...f, term: e.target.value }))}
-          placeholder="Từ vựng (vd: apple)"
-          required
-          className="flex-1 rounded border border-gray-300 px-3 py-2"
-        />
-        <button
-          type="button"
-          onClick={handleAutoFill}
-          disabled={isLookingUp || !fields.term.trim()}
-          className="shrink-0 rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-        >
-          {isLookingUp ? "Đang tra..." : "Tự động điền"}
-        </button>
+      <h2 className="font-semibold text-slate-900">Thêm từ mới</h2>
+
+      <div className="flex flex-col gap-1">
+        <label className={labelClass} htmlFor="term">
+          Từ vựng
+        </label>
+        <div className="flex gap-2">
+          <input
+            id="term"
+            name="term"
+            value={fields.term}
+            onChange={(e) => setFields((f) => ({ ...f, term: e.target.value }))}
+            placeholder="vd: apple"
+            required
+            className={`flex-1 ${inputClass}`}
+          />
+          <button
+            type="button"
+            onClick={handleAutoFill}
+            disabled={isLookingUp || !fields.term.trim()}
+            className="shrink-0 rounded-lg bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
+          >
+            {isLookingUp ? "Đang tra..." : "✨ Tự động điền"}
+          </button>
+        </div>
+        {lookupError && <p className="text-sm text-red-600">{lookupError}</p>}
       </div>
 
-      {lookupError && <p className="text-sm text-red-600">{lookupError}</p>}
+      <div className="flex flex-col gap-1">
+        <label className={labelClass} htmlFor="meaning">
+          Nghĩa tiếng Việt
+        </label>
+        <input
+          id="meaning"
+          name="meaning"
+          value={fields.meaning}
+          onChange={(e) => setFields((f) => ({ ...f, meaning: e.target.value }))}
+          placeholder="vd: quả táo"
+          required
+          className={inputClass}
+        />
+      </div>
 
-      <input
-        name="meaning"
-        value={fields.meaning}
-        onChange={(e) => setFields((f) => ({ ...f, meaning: e.target.value }))}
-        placeholder="Nghĩa tiếng Việt (vd: quả táo)"
-        required
-        className="rounded border border-gray-300 px-3 py-2"
-      />
-      <input
-        name="ipa"
-        value={fields.ipa}
-        onChange={(e) => setFields((f) => ({ ...f, ipa: e.target.value }))}
-        placeholder="Phiên âm IPA (vd: ˈæp.əl)"
-        className="rounded border border-gray-300 px-3 py-2"
-      />
-      <textarea
-        name="example"
-        value={fields.example}
-        onChange={(e) => setFields((f) => ({ ...f, example: e.target.value }))}
-        placeholder="Câu ví dụ (tiếng Anh)"
-        rows={2}
-        className="rounded border border-gray-300 px-3 py-2"
-      />
-      <textarea
-        name="exampleTranslation"
-        value={fields.exampleTranslation}
-        onChange={(e) =>
-          setFields((f) => ({ ...f, exampleTranslation: e.target.value }))
-        }
-        placeholder="Dịch nghĩa câu ví dụ (tiếng Việt)"
-        rows={2}
-        className="rounded border border-gray-300 px-3 py-2"
-      />
+      <div className="flex flex-col gap-1">
+        <label className={labelClass} htmlFor="ipa">
+          Phiên âm IPA
+        </label>
+        <input
+          id="ipa"
+          name="ipa"
+          value={fields.ipa}
+          onChange={(e) => setFields((f) => ({ ...f, ipa: e.target.value }))}
+          placeholder="vd: ˈæp.əl"
+          className={inputClass}
+        />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className={labelClass} htmlFor="example">
+          Câu ví dụ (tiếng Anh)
+        </label>
+        <textarea
+          id="example"
+          name="example"
+          value={fields.example}
+          onChange={(e) => setFields((f) => ({ ...f, example: e.target.value }))}
+          rows={2}
+          className={inputClass}
+        />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className={labelClass} htmlFor="exampleTranslation">
+          Dịch nghĩa câu ví dụ
+        </label>
+        <textarea
+          id="exampleTranslation"
+          name="exampleTranslation"
+          value={fields.exampleTranslation}
+          onChange={(e) =>
+            setFields((f) => ({ ...f, exampleTranslation: e.target.value }))
+          }
+          rows={2}
+          className={inputClass}
+        />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className={labelClass} htmlFor="lessonId">
+          Thuộc Bài
+        </label>
+        <select
+          id="lessonId"
+          name="lessonId"
+          value={fields.lessonId}
+          onChange={(e) =>
+            setFields((f) => ({ ...f, lessonId: e.target.value }))
+          }
+          className={inputClass}
+        >
+          <option value="">-- Không chọn --</option>
+          {lessons.map((lesson) => (
+            <option key={lesson.id} value={lesson.id}>
+              {lesson.name}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <button
         type="submit"
         disabled={isPending}
-        className="self-start rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+        className="self-start rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50"
       >
         Thêm từ
       </button>

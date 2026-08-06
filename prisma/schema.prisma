@@ -23,6 +23,7 @@ model User {
   accounts Account[]
   sessions Session[]
   words    Word[]
+  lessons  Lesson[]
 }
 
 model Account {
@@ -71,6 +72,7 @@ enum WordStatus {
 model Word {
   id                 String     @id @default(cuid())
   userId             String
+  lessonId           String? // thuộc Bài nào (có thể chưa phân loại)
   term               String // từ vựng
   meaning            String // nghĩa tiếng Việt
   ipa                String? // phiên âm IPA
@@ -81,7 +83,22 @@ model Word {
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson? @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([lessonId])
+}
+
+// Nhóm từ vựng theo bài học (vd: "Bài 1", "Unit 5: Travel"...)
+model Lesson {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  createdAt DateTime @default(now())
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  words Word[]
 
   @@index([userId])
 }

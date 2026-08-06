@@ -21,23 +21,25 @@ function readWordFields(formData: FormData) {
   const exampleTranslation = String(
     formData.get("exampleTranslation") ?? "",
   ).trim();
+  const lessonId = String(formData.get("lessonId") ?? "").trim();
   return {
     term,
     meaning,
     ipa: ipa || null,
     example: example || null,
     exampleTranslation: exampleTranslation || null,
+    lessonId: lessonId || null,
   };
 }
 
 export async function createWord(formData: FormData) {
   const userId = await requireUserId();
-  const { term, meaning, ipa, example, exampleTranslation } =
+  const { term, meaning, ipa, example, exampleTranslation, lessonId } =
     readWordFields(formData);
   if (!term || !meaning) return;
 
   await prisma.word.create({
-    data: { userId, term, meaning, ipa, example, exampleTranslation },
+    data: { userId, term, meaning, ipa, example, exampleTranslation, lessonId },
   });
 
   revalidatePath("/words");
@@ -45,13 +47,13 @@ export async function createWord(formData: FormData) {
 
 export async function updateWord(id: string, formData: FormData) {
   const userId = await requireUserId();
-  const { term, meaning, ipa, example, exampleTranslation } =
+  const { term, meaning, ipa, example, exampleTranslation, lessonId } =
     readWordFields(formData);
   if (!term || !meaning) return;
 
   await prisma.word.updateMany({
     where: { id, userId },
-    data: { term, meaning, ipa, example, exampleTranslation },
+    data: { term, meaning, ipa, example, exampleTranslation, lessonId },
   });
 
   revalidatePath("/words");

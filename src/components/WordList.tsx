@@ -11,24 +11,40 @@ type Word = {
   ipa: string | null;
   example: string | null;
   exampleTranslation: string | null;
+  lessonId: string | null;
+  lesson: { name: string } | null;
 };
 
-export function WordList({ words }: { words: Word[] }) {
+type Lesson = { id: string; name: string };
+
+const inputClass =
+  "rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
+
+export function WordList({
+  words,
+  lessons,
+}: {
+  words: Word[];
+  lessons: Lesson[];
+}) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   if (words.length === 0) {
     return (
-      <p className="text-sm text-gray-500">
+      <p className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
         Chưa có từ vựng nào. Thêm từ đầu tiên ở form bên trên.
       </p>
     );
   }
 
   return (
-    <ul className="flex flex-col gap-3">
+    <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {words.map((word) => (
-        <li key={word.id} className="rounded-md border border-gray-300 p-4">
+        <li
+          key={word.id}
+          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+        >
           {editingId === word.id ? (
             <form
               action={(formData) => {
@@ -43,66 +59,83 @@ export function WordList({ words }: { words: Word[] }) {
                 name="term"
                 defaultValue={word.term}
                 required
-                className="rounded border border-gray-300 px-3 py-2"
+                className={inputClass}
               />
               <input
                 name="meaning"
                 defaultValue={word.meaning}
                 required
-                className="rounded border border-gray-300 px-3 py-2"
+                className={inputClass}
               />
               <input
                 name="ipa"
                 defaultValue={word.ipa ?? ""}
                 placeholder="Phiên âm IPA"
-                className="rounded border border-gray-300 px-3 py-2"
+                className={inputClass}
               />
               <textarea
                 name="example"
                 defaultValue={word.example ?? ""}
                 placeholder="Câu ví dụ (tiếng Anh)"
                 rows={2}
-                className="rounded border border-gray-300 px-3 py-2"
+                className={inputClass}
               />
               <textarea
                 name="exampleTranslation"
                 defaultValue={word.exampleTranslation ?? ""}
                 placeholder="Dịch nghĩa câu ví dụ (tiếng Việt)"
                 rows={2}
-                className="rounded border border-gray-300 px-3 py-2"
+                className={inputClass}
               />
-              <div className="flex gap-2">
+              <select
+                name="lessonId"
+                defaultValue={word.lessonId ?? ""}
+                className={inputClass}
+              >
+                <option value="">-- Không chọn --</option>
+                {lessons.map((lesson) => (
+                  <option key={lesson.id} value={lesson.id}>
+                    {lesson.name}
+                  </option>
+                ))}
+              </select>
+              <div className="flex gap-2 pt-1">
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="rounded-md bg-black px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-800"
+                  className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700"
                 >
                   Lưu
                 </button>
                 <button
                   type="button"
                   onClick={() => setEditingId(null)}
-                  className="rounded-md bg-gray-200 px-3 py-1.5 text-sm font-medium hover:bg-gray-300"
+                  className="rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-200"
                 >
                   Huỷ
                 </button>
               </div>
             </form>
           ) : (
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1.5">
               <div className="flex items-start justify-between gap-2">
-                <p className="font-semibold">
-                  {word.term}
+                <div>
+                  <p className="text-lg font-semibold text-slate-900">
+                    {word.term}
+                  </p>
                   {word.ipa && (
-                    <span className="ml-2 font-normal text-gray-500">
-                      /{word.ipa}/
+                    <p className="text-sm text-slate-400">/{word.ipa}/</p>
+                  )}
+                  {word.lesson && (
+                    <span className="mt-1 inline-block rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600">
+                      {word.lesson.name}
                     </span>
                   )}
-                </p>
-                <div className="flex shrink-0 gap-3">
+                </div>
+                <div className="flex shrink-0 gap-3 pt-1">
                   <button
                     onClick={() => setEditingId(word.id)}
-                    className="text-sm text-blue-600 hover:underline"
+                    className="text-sm font-medium text-indigo-600 hover:underline"
                   >
                     Sửa
                   </button>
@@ -114,18 +147,18 @@ export function WordList({ words }: { words: Word[] }) {
                         });
                       }
                     }}
-                    className="text-sm text-red-600 hover:underline"
+                    className="text-sm font-medium text-red-500 hover:underline"
                   >
                     Xoá
                   </button>
                 </div>
               </div>
-              <p>{word.meaning}</p>
+              <p className="text-slate-700">{word.meaning}</p>
               {word.example && (
-                <p className="text-sm italic text-gray-500">{word.example}</p>
+                <p className="text-sm italic text-slate-500">{word.example}</p>
               )}
               {word.exampleTranslation && (
-                <p className="text-sm italic text-gray-400">
+                <p className="text-sm italic text-slate-400">
                   {word.exampleTranslation}
                 </p>
               )}
