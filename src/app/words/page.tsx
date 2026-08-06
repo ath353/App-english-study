@@ -7,6 +7,7 @@ import { WordForm } from "@/components/WordForm";
 import { WordList } from "@/components/WordList";
 import { LessonManager } from "@/components/LessonManager";
 import { LessonTabs } from "@/components/LessonTabs";
+import { SearchForm } from "@/components/SearchForm";
 
 const PAGE_SIZE = 50;
 
@@ -76,21 +77,7 @@ export default async function WordsPage({
         <WordForm lessons={lessons} defaultLessonId={lessonId} />
       </div>
 
-      <form className="flex max-w-xl gap-2">
-        <input
-          type="text"
-          name="q"
-          defaultValue={query}
-          placeholder="Tìm theo từ hoặc nghĩa..."
-          className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-        />
-        <button
-          type="submit"
-          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-        >
-          Tìm
-        </button>
-      </form>
+      <SearchForm defaultQuery={query} lessonId={lessonId} />
 
       <LessonTabs
         lessons={lessons}

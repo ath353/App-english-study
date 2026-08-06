@@ -21,7 +21,7 @@ export function FlashcardReview({ words }: { words: Word[] }) {
   if (words.length === 0) {
     return (
       <p className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
-        Chưa có từ nào để ôn tập. Thêm từ ở trang "Từ vựng" trước đã nhé.
+        Chưa có từ nào để ôn tập. Thêm từ ở trang &quot;Từ vựng&quot; trước đã nhé.
       </p>
     );
   }
