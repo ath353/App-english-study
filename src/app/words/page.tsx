@@ -66,18 +66,18 @@ export default async function WordsPage({
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-slate-900">Từ vựng của tôi</h1>
         <div className="flex gap-2">
           <Link
             href={`/words/bulk-add${lessonId ? `?lesson=${lessonId}` : ""}`}
-            className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200"
+            className="flex-1 whitespace-nowrap rounded-full bg-slate-100 px-4 py-2 text-center text-sm font-semibold text-slate-700 hover:bg-slate-200 sm:flex-none"
           >
             Nhập hàng loạt
           </Link>
           <Link
             href={`/words/add${lessonId ? `?lesson=${lessonId}` : ""}`}
-            className="rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
+            className="flex-1 whitespace-nowrap rounded-full bg-indigo-600 px-4 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 sm:flex-none"
           >
             + Thêm từ
           </Link>
