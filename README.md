@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📚 English-Study
 
-## Getting Started
+Ứng dụng học từ vựng tiếng Anh cá nhân — thêm từ tự do (không theo lộ trình có sẵn), tổ chức theo Bài học, ôn tập bằng flashcard. Chạy được trên cả web lẫn điện thoại, cài được như app thật (PWA).
 
-First, run the development server:
+🔗 **Link dùng thử:** https://app-english-study.vercel.app
+
+## Tính năng
+
+- Đăng nhập bằng Google — dữ liệu tách riêng theo từng tài khoản
+- Thêm từ vựng, tự động điền nghĩa / phiên âm IPA / câu ví dụ (qua Free Dictionary API) và tự động dịch sang tiếng Việt (qua MyMemory API)
+- Nhập hàng loạt: dán danh sách nhiều từ cùng lúc, bổ sung nghĩa sau
+- Tổ chức từ vựng theo **Bài học**, lọc và ôn tập riêng từng Bài
+- Ôn tập bằng flashcard — lật thẻ, tự đánh giá Nhớ / Chưa nhớ
+- Tìm kiếm, phân trang danh sách từ vựng
+- Chọn nhiều từ để xoá hàng loạt
+- Cài lên màn hình chính điện thoại, dùng như app thật (PWA)
+
+## Công nghệ sử dụng
+
+| Hạng mục | Công nghệ |
+|---|---|
+| Framework | [Next.js 16](https://nextjs.org) (App Router, TypeScript) |
+| Giao diện | [Tailwind CSS](https://tailwindcss.com) |
+| Database | PostgreSQL ([Neon](https://neon.tech), serverless) |
+| ORM | [Prisma](https://www.prisma.io) |
+| Đăng nhập | [Auth.js](https://authjs.dev) + Google OAuth |
+| Hosting | [Vercel](https://vercel.com) |
+
+## Chạy trên máy (development)
+
+### 1. Cài đặt gói phụ thuộc
+
+```bash
+npm install
+```
+
+### 2. Tạo file `.env` ở thư mục gốc
+
+```
+DATABASE_URL=         # connection string PostgreSQL (khuyến nghị dùng bản "pooled" của Neon)
+AUTH_SECRET=           # chuỗi bí mật ngẫu nhiên, dùng để mã hoá session
+AUTH_GOOGLE_ID=        # Client ID từ Google Cloud Console (OAuth)
+AUTH_GOOGLE_SECRET=    # Client Secret tương ứng
+```
+
+### 3. Khởi tạo database
+
+```bash
+npx prisma migrate dev
+```
+
+### 4. Chạy server phát triển
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Mở [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Các lệnh có sẵn
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Lệnh | Chức năng |
+|---|---|
+| `npm run dev` | Chạy server phát triển (dev) |
+| `npm run build` | Build bản production |
+| `npm run start` | Chạy bản đã build |
+| `npm run lint` | Kiểm tra lỗi code (ESLint) |
 
-## Learn More
+## Cấu trúc thư mục chính
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/
+│   ├── words/            # Danh sách, thêm, sửa, nhập hàng loạt từ vựng
+│   ├── review/            # Trang ôn tập flashcard
+│   └── api/
+│       └── dictionary/    # API tra từ điển + dịch nghĩa
+├── components/            # React components dùng chung
+└── lib/
+    ├── actions/           # Server Actions (thêm/sửa/xoá dữ liệu)
+    ├── auth.ts            # Cấu hình đăng nhập
+    └── prisma.ts          # Kết nối database
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+prisma/
+└── schema.prisma          # Cấu trúc database (User, Word, Lesson...)
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Ghi chú
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Dự án cá nhân, không phải mã nguồn mở công khai.
