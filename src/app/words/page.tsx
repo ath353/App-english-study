@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { WordForm } from "@/components/WordForm";
 import { WordList } from "@/components/WordList";
 import { LessonManager } from "@/components/LessonManager";
 import { LessonTabs } from "@/components/LessonTabs";
@@ -67,14 +66,18 @@ export default async function WordsPage({
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-6">
-      <h1 className="text-2xl font-bold text-slate-900">Từ vựng của tôi</h1>
-
-      <div className="w-full max-w-xl">
-        <LessonManager lessons={lessons} />
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-slate-900">Từ vựng của tôi</h1>
+        <Link
+          href={`/words/add${lessonId ? `?lesson=${lessonId}` : ""}`}
+          className="rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
+        >
+          + Thêm từ
+        </Link>
       </div>
 
       <div className="w-full max-w-xl">
-        <WordForm lessons={lessons} defaultLessonId={lessonId} />
+        <LessonManager lessons={lessons} />
       </div>
 
       <SearchForm defaultQuery={query} lessonId={lessonId} />
