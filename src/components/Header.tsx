@@ -12,7 +12,7 @@ export async function Header() {
         <Link href="/" className="flex items-center gap-2 text-lg font-bold text-slate-900">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/icons/icon-192.png" alt="Logo" className="h-8 w-8 rounded-full" />
-          Học từ vựng
+          English-Study
         </Link>
 
         <nav className="flex items-center gap-2 sm:gap-3">

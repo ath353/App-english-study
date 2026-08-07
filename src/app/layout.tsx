@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Học từ vựng",
+  title: "English-Study",
   description: "Ứng dụng học từ vựng tiếng Anh cá nhân",
   manifest: "/manifest.json",
   icons: {
