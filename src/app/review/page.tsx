@@ -21,7 +21,7 @@ export default async function ReviewPage({
   const [words, totalCount, lessons] = await Promise.all([
     prisma.word.findMany({
       where: { userId, ...(lessonId ? { lessonId } : {}) },
-      orderBy: { createdAt: "asc" },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
     }),
     prisma.word.count({ where: { userId } }),
     prisma.lesson.findMany({

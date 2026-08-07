@@ -44,7 +44,7 @@ export default async function WordsPage({
   const [words, totalCount, overallCount, lessons] = await Promise.all([
     prisma.word.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take,
       include: { lesson: { select: { name: true } } },
     }),
