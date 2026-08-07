@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 
-import { deleteWord, updateWord } from "@/lib/actions/words";
+import { deleteWord, deleteWords, updateWord } from "@/lib/actions/words";
 
 type Word = {
   id: string;
@@ -175,7 +175,47 @@ export function WordList({
   lessons: Lesson[];
 }) {
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isPending, startTransition] = useTransition();
+
+  // Chỉ tính những ID đang thực sự hiện trong danh sách hiện tại — tránh trường hợp
+  // đổi bộ lọc/tìm kiếm rồi lỡ tay xoá nhầm từ không còn hiển thị trên màn hình.
+  const activeSelected = words.filter((w) => selectedIds.has(w.id));
+
+  function toggleSelected(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    if (activeSelected.length === words.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(words.map((w) => w.id)));
+    }
+  }
+
+  function handleBulkDelete() {
+    if (activeSelected.length === 0) return;
+    if (
+      confirm(
+        `Xoá ${activeSelected.length} từ đã chọn? Không thể hoàn tác.`,
+      )
+    ) {
+      const ids = activeSelected.map((w) => w.id);
+      startTransition(async () => {
+        await deleteWords(ids);
+        setSelectedIds(new Set());
+      });
+    }
+  }
 
   if (words.length === 0) {
     return (
@@ -186,8 +226,37 @@ export function WordList({
   }
 
   return (
-    <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {words.map((word) => (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center justify-between gap-2 text-sm">
+        <label className="flex items-center gap-2 text-slate-600">
+          <input
+            type="checkbox"
+            checked={activeSelected.length === words.length}
+            onChange={toggleSelectAll}
+            className="h-4 w-4 rounded border-slate-300"
+          />
+          Chọn tất cả ({words.length})
+        </label>
+
+        {activeSelected.length > 0 && (
+          <button
+            onClick={handleBulkDelete}
+            disabled={isPending}
+            className="rounded-full bg-red-600 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-red-700 disabled:opacity-50"
+          >
+            Xoá đã chọn ({activeSelected.length})
+          </button>
+        )}
+      </div>
+
+      <ul
+        className={
+          editingId
+            ? "flex flex-col gap-3"
+            : "grid grid-cols-1 items-start gap-3 sm:grid-cols-2 lg:grid-cols-3"
+        }
+      >
+        {words.map((word) => (
         <li
           key={word.id}
           className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
@@ -201,18 +270,27 @@ export function WordList({
           ) : (
             <div className="flex flex-col gap-1.5">
               <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className="text-lg font-semibold text-slate-900">
-                    {word.term}
-                  </p>
-                  {word.ipa && (
-                    <p className="text-sm text-slate-400">/{word.ipa}/</p>
-                  )}
-                  {word.lesson && (
-                    <span className="mt-1 inline-block rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600">
-                      {word.lesson.name}
-                    </span>
-                  )}
+                <div className="flex items-start gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(word.id)}
+                    onChange={() => toggleSelected(word.id)}
+                    className="mt-1.5 h-4 w-4 shrink-0 rounded border-slate-300"
+                    aria-label={`Chọn từ ${word.term}`}
+                  />
+                  <div>
+                    <p className="text-lg font-semibold text-slate-900">
+                      {word.term}
+                    </p>
+                    {word.ipa && (
+                      <p className="text-sm text-slate-400">/{word.ipa}/</p>
+                    )}
+                    {word.lesson && (
+                      <span className="mt-1 inline-block rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600">
+                        {word.lesson.name}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="flex shrink-0 gap-3 pt-1">
                   <button
@@ -255,6 +333,7 @@ export function WordList({
           )}
         </li>
       ))}
-    </ul>
+      </ul>
+    </div>
   );
 }

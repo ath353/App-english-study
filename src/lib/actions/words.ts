@@ -118,6 +118,15 @@ export async function deleteWord(id: string) {
   revalidatePath("/words");
 }
 
+export async function deleteWords(ids: string[]) {
+  const userId = await requireUserId();
+  const cleanIds = ids.filter((id) => typeof id === "string" && id.length > 0);
+  if (cleanIds.length === 0) return;
+
+  await prisma.word.deleteMany({ where: { id: { in: cleanIds }, userId } });
+  revalidatePath("/words");
+}
+
 const STATUS_ORDER = ["NEW", "LEARNING", "KNOWN"] as const;
 
 export async function reviewWord(id: string, remembered: boolean) {
