@@ -74,7 +74,7 @@ model Word {
   userId             String
   lessonId           String? // thuộc Bài nào (có thể chưa phân loại)
   term               String // từ vựng
-  meaning            String // nghĩa tiếng Việt
+  meaning            String? // nghĩa tiếng Việt (có thể chưa có khi nhập hàng loạt)
   ipa                String? // phiên âm IPA
   example            String? // câu ví dụ (tiếng Anh)
   exampleTranslation String? // bản dịch tiếng Việt của câu ví dụ

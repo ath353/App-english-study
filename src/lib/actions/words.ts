@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -57,6 +58,26 @@ export async function updateWord(id: string, formData: FormData) {
   });
 
   revalidatePath("/words");
+}
+
+export async function bulkCreateWords(formData: FormData) {
+  const userId = await requireUserId();
+  const rawTerms = String(formData.get("terms") ?? "");
+  const lessonId = String(formData.get("lessonId") ?? "").trim() || null;
+
+  const terms = rawTerms
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+
+  if (terms.length > 0) {
+    await prisma.word.createMany({
+      data: terms.map((term) => ({ userId, term, lessonId })),
+    });
+  }
+
+  revalidatePath("/words");
+  redirect(`/words${lessonId ? `?lesson=${lessonId}` : ""}`);
 }
 
 export async function deleteWord(id: string) {

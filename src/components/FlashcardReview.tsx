@@ -7,7 +7,7 @@ import { reviewWord } from "@/lib/actions/words";
 type Word = {
   id: string;
   term: string;
-  meaning: string;
+  meaning: string | null;
   ipa: string | null;
   example: string | null;
   exampleTranslation: string | null;
@@ -87,7 +87,13 @@ export function FlashcardReview({ words }: { words: Word[] }) {
                 </span>
               )}
             </p>
-            <p className="text-xl text-slate-700">{word.meaning}</p>
+            {word.meaning ? (
+              <p className="text-xl text-slate-700">{word.meaning}</p>
+            ) : (
+              <p className="text-sm italic text-amber-600">
+                Chưa có nghĩa — vào trang Từ vựng để bổ sung
+              </p>
+            )}
             {word.example && (
               <p className="text-sm italic text-slate-500">{word.example}</p>
             )}
