@@ -14,6 +14,17 @@ async function requireUserId() {
   return session.user.id;
 }
 
+// Xác nhận lessonId (nếu có) thực sự thuộc về user này — tránh lỗi vi phạm
+// khoá ngoại khi Bài đã bị xoá ở nơi khác, và tránh gán nhầm vào Bài của người khác.
+async function resolveLessonId(userId: string, lessonId: string | null) {
+  if (!lessonId) return null;
+  const lesson = await prisma.lesson.findFirst({
+    where: { id: lessonId, userId },
+    select: { id: true },
+  });
+  return lesson ? lesson.id : null;
+}
+
 function readWordFields(formData: FormData) {
   const term = String(formData.get("term") ?? "").trim();
   const meaning = String(formData.get("meaning") ?? "").trim();
@@ -39,8 +50,18 @@ export async function createWord(formData: FormData) {
     readWordFields(formData);
   if (!term || !meaning) return;
 
+  const safeLessonId = await resolveLessonId(userId, lessonId);
+
   await prisma.word.create({
-    data: { userId, term, meaning, ipa, example, exampleTranslation, lessonId },
+    data: {
+      userId,
+      term,
+      meaning,
+      ipa,
+      example,
+      exampleTranslation,
+      lessonId: safeLessonId,
+    },
   });
 
   revalidatePath("/words");
@@ -52,9 +73,18 @@ export async function updateWord(id: string, formData: FormData) {
     readWordFields(formData);
   if (!term || !meaning) return;
 
+  const safeLessonId = await resolveLessonId(userId, lessonId);
+
   await prisma.word.updateMany({
     where: { id, userId },
-    data: { term, meaning, ipa, example, exampleTranslation, lessonId },
+    data: {
+      term,
+      meaning,
+      ipa,
+      example,
+      exampleTranslation,
+      lessonId: safeLessonId,
+    },
   });
 
   revalidatePath("/words");
@@ -63,12 +93,14 @@ export async function updateWord(id: string, formData: FormData) {
 export async function bulkCreateWords(formData: FormData) {
   const userId = await requireUserId();
   const rawTerms = String(formData.get("terms") ?? "");
-  const lessonId = String(formData.get("lessonId") ?? "").trim() || null;
+  const rawLessonId = String(formData.get("lessonId") ?? "").trim() || null;
 
   const terms = rawTerms
     .split("\n")
     .map((line) => line.trim())
     .filter((line) => line.length > 0);
+
+  const lessonId = await resolveLessonId(userId, rawLessonId);
 
   if (terms.length > 0) {
     await prisma.word.createMany({
