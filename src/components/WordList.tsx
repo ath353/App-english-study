@@ -249,17 +249,13 @@ export function WordList({
         )}
       </div>
 
-      <ul
-        className={
-          editingId
-            ? "flex flex-col gap-3"
-            : "grid grid-cols-1 items-start gap-3 sm:grid-cols-2 lg:grid-cols-3"
-        }
-      >
+      <ul className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {words.map((word) => (
         <li
           key={word.id}
-          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+          className={`rounded-2xl border border-slate-200 bg-white p-5 shadow-sm ${
+            editingId === word.id ? "col-span-full" : ""
+          }`}
         >
           {editingId === word.id ? (
             <EditWordForm
