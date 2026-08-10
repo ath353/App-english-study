@@ -84,12 +84,20 @@ export default async function WordsPage({
         </div>
       </div>
 
-      <a
-        href="/api/export"
-        className="self-start text-sm text-slate-500 hover:text-slate-700 hover:underline"
-      >
-        ⬇ Xuất dữ liệu từ vựng (.json)
-      </a>
+      <div className="flex gap-4">
+        <a
+          href="/api/export"
+          className="text-sm text-slate-500 hover:text-slate-700 hover:underline"
+        >
+          ⬇ Xuất dữ liệu (.json)
+        </a>
+        <a
+          href="/api/export/csv"
+          className="text-sm text-slate-500 hover:text-slate-700 hover:underline"
+        >
+          ⬇ Xuất dữ liệu (.csv — mở bằng Excel)
+        </a>
+      </div>
 
       <div className="w-full max-w-xl">
         <LessonManager lessons={lessons} />
