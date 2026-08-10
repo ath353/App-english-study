@@ -84,6 +84,13 @@ export default async function WordsPage({
         </div>
       </div>
 
+      <a
+        href="/api/export"
+        className="self-start text-sm text-slate-500 hover:text-slate-700 hover:underline"
+      >
+        ⬇ Xuất dữ liệu từ vựng (.json)
+      </a>
+
       <div className="w-full max-w-xl">
         <LessonManager lessons={lessons} />
       </div>
