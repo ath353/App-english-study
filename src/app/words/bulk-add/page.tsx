@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { bulkCreateWords } from "@/lib/actions/words";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export default async function BulkAddWordsPage({
   searchParams,
@@ -77,12 +78,12 @@ export default async function BulkAddWordsPage({
           </select>
         </div>
 
-        <button
-          type="submit"
-          className="self-start rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
+        <SubmitButton
+          pendingText="Đang lưu..."
+          className="self-start rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50"
         >
           Lưu danh sách
-        </button>
+        </SubmitButton>
       </form>
     </main>
   );
