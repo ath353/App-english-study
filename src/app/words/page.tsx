@@ -10,10 +10,22 @@ import { SearchForm } from "@/components/SearchForm";
 
 const PAGE_SIZE = 50;
 
+const STATUS_FILTERS = [
+  { value: "", label: "Mọi trạng thái" },
+  { value: "NEW", label: "Mới" },
+  { value: "LEARNING", label: "Đang học" },
+  { value: "KNOWN", label: "Đã thuộc" },
+] as const;
+
 export default async function WordsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; limit?: string; lesson?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    limit?: string;
+    lesson?: string;
+    status?: string;
+  }>;
 }) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -21,9 +33,13 @@ export default async function WordsPage({
   }
   const userId = session.user.id;
 
-  const { q, limit, lesson: lessonId } = await searchParams;
+  const { q, limit, lesson: lessonId, status } = await searchParams;
   const query = q?.trim() ?? "";
   const take = Number(limit) > 0 ? Number(limit) : PAGE_SIZE;
+  const activeStatus =
+    status === "NEW" || status === "LEARNING" || status === "KNOWN"
+      ? (status as "NEW" | "LEARNING" | "KNOWN")
+      : undefined;
 
   const baseWhere = {
     userId,
@@ -35,6 +51,7 @@ export default async function WordsPage({
           ],
         }
       : {}),
+    ...(activeStatus ? { status: activeStatus } : {}),
   };
   const where = {
     ...baseWhere,
@@ -58,8 +75,12 @@ export default async function WordsPage({
   ]);
 
   const hasMore = words.length < totalCount;
-  const nextLimitParams = new URLSearchParams({
+  const sharedParams = {
     ...(query ? { q: query } : {}),
+    ...(activeStatus ? { status: activeStatus } : {}),
+  };
+  const nextLimitParams = new URLSearchParams({
+    ...sharedParams,
     ...(lessonId ? { lesson: lessonId } : {}),
     limit: String(take + PAGE_SIZE),
   });
@@ -103,15 +124,45 @@ export default async function WordsPage({
         <LessonManager lessons={lessons} />
       </div>
 
-      <SearchForm defaultQuery={query} lessonId={lessonId} />
+      <SearchForm
+        defaultQuery={query}
+        lessonId={lessonId}
+        status={activeStatus}
+      />
 
       <LessonTabs
         lessons={lessons}
         activeLessonId={lessonId}
         basePath="/words"
         totalCount={overallCount}
-        extraParams={query ? { q: query } : {}}
+        extraParams={sharedParams}
       />
+
+      <div className="flex flex-wrap gap-2">
+        {STATUS_FILTERS.map((s) => {
+          const params = new URLSearchParams({
+            ...(query ? { q: query } : {}),
+            ...(lessonId ? { lesson: lessonId } : {}),
+            ...(s.value ? { status: s.value } : {}),
+          });
+          const qs = params.toString();
+          const active = (activeStatus ?? "") === s.value;
+          return (
+            <Link
+              key={s.value || "all"}
+              href={qs ? `/words?${qs}` : "/words"}
+              scroll={false}
+              className={`rounded-full px-3 py-1.5 text-sm font-medium ${
+                active
+                  ? "bg-indigo-600 text-white"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              {s.label}
+            </Link>
+          );
+        })}
+      </div>
 
       <p className="text-sm text-slate-500">
         Hiện {words.length} / {totalCount} từ

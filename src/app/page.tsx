@@ -34,9 +34,12 @@ export default async function Home() {
     );
   }
 
-  const wordCount = await prisma.word.count({
-    where: { userId: session.user.id },
-  });
+  const [wordCount, dueCount] = await Promise.all([
+    prisma.word.count({ where: { userId: session.user.id } }),
+    prisma.word.count({
+      where: { userId: session.user.id, dueAt: { lte: new Date() } },
+    }),
+  ]);
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 p-6">
@@ -47,9 +50,15 @@ export default async function Home() {
         </h1>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-sm text-slate-500">Tổng số từ vựng</p>
-        <p className="text-4xl font-bold text-indigo-600">{wordCount}</p>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-sm text-slate-500">Tổng số từ vựng</p>
+          <p className="text-4xl font-bold text-indigo-600">{wordCount}</p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-sm text-slate-500">Cần ôn hôm nay</p>
+          <p className="text-4xl font-bold text-indigo-600">{dueCount}</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -72,7 +81,9 @@ export default async function Home() {
           <span className="text-2xl">🔁</span>
           <span className="font-semibold text-slate-900">Ôn tập</span>
           <span className="text-sm text-slate-500">
-            Lật thẻ, tự đánh giá mức nhớ
+            {dueCount > 0
+              ? `${dueCount} từ đang chờ bạn ôn`
+              : "Lật thẻ, tự đánh giá mức nhớ"}
           </span>
         </Link>
       </div>

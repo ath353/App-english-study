@@ -10,11 +10,19 @@ type Word = {
   meaning: string | null;
   ipa: string | null;
   example: string | null;
+  status: "NEW" | "LEARNING" | "KNOWN";
   lessonId: string | null;
   lesson: { name: string } | null;
 };
 
 type Lesson = { id: string; name: string };
+
+const STATUS_META: Record<Word["status"], { label: string; className: string }> =
+  {
+    NEW: { label: "Mới", className: "bg-slate-100 text-slate-500" },
+    LEARNING: { label: "Đang học", className: "bg-amber-100 text-amber-700" },
+    KNOWN: { label: "Đã thuộc", className: "bg-emerald-100 text-emerald-700" },
+  };
 
 const inputClass =
   "rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
@@ -276,11 +284,18 @@ export function WordList({
                     {word.ipa && (
                       <p className="text-sm text-slate-400">/{word.ipa}/</p>
                     )}
-                    {word.lesson && (
-                      <span className="mt-1 inline-block rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600">
-                        {word.lesson.name}
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      <span
+                        className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_META[word.status].className}`}
+                      >
+                        {STATUS_META[word.status].label}
                       </span>
-                    )}
+                      {word.lesson && (
+                        <span className="inline-block rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600">
+                          {word.lesson.name}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="flex shrink-0 gap-3 pt-1">

@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 export function SearchForm({
   defaultQuery,
   lessonId,
+  status,
 }: {
   defaultQuery: string;
   lessonId?: string;
+  status?: string;
 }) {
   const router = useRouter();
 
@@ -19,6 +21,7 @@ export function SearchForm({
     const params = new URLSearchParams();
     if (q) params.set("q", q);
     if (lessonId) params.set("lesson", lessonId);
+    if (status) params.set("status", status);
 
     const qs = params.toString();
     router.push(qs ? `/words?${qs}` : "/words", { scroll: false });
