@@ -117,21 +117,6 @@ export default async function WordsPage({
         </div>
       </div>
 
-      <div className="flex gap-4">
-        <a
-          href="/api/export"
-          className="text-sm text-slate-500 hover:text-slate-700 hover:underline"
-        >
-          ⬇ Xuất dữ liệu (.json)
-        </a>
-        <a
-          href="/api/export/csv"
-          className="text-sm text-slate-500 hover:text-slate-700 hover:underline"
-        >
-          ⬇ Xuất dữ liệu (.csv — mở bằng Excel)
-        </a>
-      </div>
-
       {missingMeaningCount > 0 && (
         <AutoFillMissingButton
           count={missingMeaningCount}

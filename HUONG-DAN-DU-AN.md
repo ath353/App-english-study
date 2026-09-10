@@ -102,10 +102,7 @@ english_study/
 │   │   │
 │   │   └── api/                ← Các "cửa" API
 │   │       ├── auth/[...nextauth]/route.ts  ← Cửa xử lý đăng nhập Google
-│   │       ├── dictionary/route.ts          ← Tra từ điển + dịch (nút "Tự động điền")
-│   │       └── export/                      ← Xuất dữ liệu ra file
-│   │           ├── route.ts                 ← Xuất .json
-│   │           └── csv/route.ts             ← Xuất .csv (mở bằng Excel)
+│   │       └── dictionary/route.ts          ← Tra từ điển + dịch (nút "Tự động điền")
 │   │
 │   ├── components/             ← Các MẢNH GIAO DIỆN tái sử dụng
 │   │   ├── Header.tsx          ← Thanh trên cùng (logo, nút điều hướng, đăng xuất)
