@@ -35,8 +35,12 @@ export type LookupOutcome =
 async function translateToVietnamese(text: string): Promise<string> {
   if (!text) return "";
   try {
+    // Gắn email (nếu có cấu hình) để MyMemory nâng hạn mức dịch miễn phí
+    // từ ~1000 lên ~50.000 từ/ngày.
+    const email = process.env.MYMEMORY_EMAIL;
+    const emailParam = email ? `&de=${encodeURIComponent(email)}` : "";
     const res = await fetch(
-      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|vi`,
+      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|vi${emailParam}`,
       { signal: AbortSignal.timeout(EXTERNAL_TIMEOUT) },
     );
     if (!res.ok) return "";
