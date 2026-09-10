@@ -25,6 +25,19 @@ async function resolveLessonId(userId: string, lessonId: string | null) {
   return lesson ? lesson.id : null;
 }
 
+// Kết quả trả về cho form: có lỗi thì kèm thông báo để hiển thị, không có lỗi
+// nghĩa là lưu thành công.
+export type WordActionResult = { error: string } | undefined;
+
+// Giới hạn độ dài từng ô nhập (số ký tự) — chặn dữ liệu bất thường quá lớn.
+const FIELD_LIMITS = {
+  term: 100,
+  meaning: 500,
+  ipa: 100,
+  example: 1000,
+  exampleTranslation: 1000,
+} as const;
+
 function readWordFields(formData: FormData) {
   const term = String(formData.get("term") ?? "").trim();
   const meaning = String(formData.get("meaning") ?? "").trim();
@@ -44,12 +57,38 @@ function readWordFields(formData: FormData) {
   };
 }
 
-export async function createWord(formData: FormData) {
-  const userId = await requireUserId();
-  const { term, meaning, ipa, example, exampleTranslation, lessonId } =
-    readWordFields(formData);
-  if (!term || !meaning) return;
+// Kiểm tra dữ liệu form. Trả về thông báo lỗi (string) nếu sai, null nếu hợp lệ.
+function validateWordFields(
+  fields: ReturnType<typeof readWordFields>,
+): string | null {
+  if (!fields.term || !fields.meaning) {
+    return "Cần nhập cả từ vựng lẫn nghĩa.";
+  }
+  const tooLong: [string, string | null, number][] = [
+    ["Từ vựng", fields.term, FIELD_LIMITS.term],
+    ["Nghĩa", fields.meaning, FIELD_LIMITS.meaning],
+    ["Phiên âm", fields.ipa, FIELD_LIMITS.ipa],
+    ["Câu ví dụ", fields.example, FIELD_LIMITS.example],
+    ["Dịch câu ví dụ", fields.exampleTranslation, FIELD_LIMITS.exampleTranslation],
+  ];
+  for (const [label, value, limit] of tooLong) {
+    if (value && value.length > limit) {
+      return `${label} không được dài quá ${limit} ký tự.`;
+    }
+  }
+  return null;
+}
 
+export async function createWord(
+  formData: FormData,
+): Promise<WordActionResult> {
+  const userId = await requireUserId();
+  const fields = readWordFields(formData);
+
+  const error = validateWordFields(fields);
+  if (error) return { error };
+
+  const { term, meaning, ipa, example, exampleTranslation, lessonId } = fields;
   const safeLessonId = await resolveLessonId(userId, lessonId);
 
   await prisma.word.create({
@@ -67,12 +106,17 @@ export async function createWord(formData: FormData) {
   revalidatePath("/words");
 }
 
-export async function updateWord(id: string, formData: FormData) {
+export async function updateWord(
+  id: string,
+  formData: FormData,
+): Promise<WordActionResult> {
   const userId = await requireUserId();
-  const { term, meaning, ipa, example, exampleTranslation, lessonId } =
-    readWordFields(formData);
-  if (!term || !meaning) return;
+  const fields = readWordFields(formData);
 
+  const error = validateWordFields(fields);
+  if (error) return { error };
+
+  const { term, meaning, ipa, example, exampleTranslation, lessonId } = fields;
   const safeLessonId = await resolveLessonId(userId, lessonId);
 
   await prisma.word.updateMany({

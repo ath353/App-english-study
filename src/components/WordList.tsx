@@ -39,6 +39,7 @@ function EditWordForm({
   });
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   async function handleAutoFill() {
@@ -72,9 +73,14 @@ function EditWordForm({
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setSaveError(null);
     const formData = new FormData(e.currentTarget);
     startTransition(async () => {
-      await updateWord(word.id, formData);
+      const result = await updateWord(word.id, formData);
+      if (result?.error) {
+        setSaveError(result.error);
+        return;
+      }
       onDone();
     });
   }
@@ -146,6 +152,8 @@ function EditWordForm({
           </option>
         ))}
       </select>
+
+      {saveError && <p className="text-sm text-red-600">{saveError}</p>}
 
       <div className="flex gap-2 pt-1">
         <button

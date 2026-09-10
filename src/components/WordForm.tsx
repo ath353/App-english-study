@@ -29,6 +29,7 @@ export function WordForm({
   const [fields, setFields] = useState(emptyFields);
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   async function handleAutoFill() {
@@ -62,9 +63,14 @@ export function WordForm({
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setSaveError(null);
     const formData = new FormData(e.currentTarget);
     startTransition(async () => {
-      await createWord(formData);
+      const result = await createWord(formData);
+      if (result?.error) {
+        setSaveError(result.error);
+        return;
+      }
       setFields((f) => ({ ...emptyFields, lessonId: f.lessonId }));
     });
   }
@@ -182,6 +188,8 @@ export function WordForm({
           ))}
         </select>
       </div>
+
+      {saveError && <p className="text-sm text-red-600">{saveError}</p>}
 
       <button
         type="submit"
