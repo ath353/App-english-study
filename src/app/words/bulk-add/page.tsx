@@ -37,8 +37,9 @@ export default async function BulkAddWordsPage({
 
       <p className="text-sm text-slate-500">
         Dán danh sách từ, mỗi dòng 1 từ. Các từ sẽ được lưu ngay lập tức
-        (chưa có nghĩa/IPA/ví dụ) — bạn bổ sung chi tiết cho từng từ sau bằng
-        nút &quot;Tự động điền&quot; ở chế độ Sửa trong danh sách.
+        (chưa có nghĩa/IPA/ví dụ). Sau đó ở trang Từ vựng bấm nút{" "}
+        <span className="font-medium">&quot;✨ Điền tự động ... từ chưa có nghĩa&quot;</span>{" "}
+        để tra từ điển điền hàng loạt, rồi soát lại từng nghĩa.
       </p>
 
       <form

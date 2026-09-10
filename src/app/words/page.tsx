@@ -7,6 +7,10 @@ import { WordList } from "@/components/WordList";
 import { LessonManager } from "@/components/LessonManager";
 import { LessonTabs } from "@/components/LessonTabs";
 import { SearchForm } from "@/components/SearchForm";
+import { AutoFillMissingButton } from "@/components/AutoFillMissingButton";
+
+// Cho phép server action "điền tự động hàng loạt" chạy lâu hơn mặc định.
+export const maxDuration = 60;
 
 const PAGE_SIZE = 50;
 
@@ -58,21 +62,29 @@ export default async function WordsPage({
     ...(lessonId ? { lessonId } : {}),
   };
 
-  const [words, totalCount, overallCount, lessons] = await Promise.all([
-    prisma.word.findMany({
-      where,
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      take,
-      include: { lesson: { select: { name: true } } },
-    }),
-    prisma.word.count({ where }),
-    prisma.word.count({ where: baseWhere }),
-    prisma.lesson.findMany({
-      where: { userId },
-      orderBy: { createdAt: "asc" },
-      include: { _count: { select: { words: true } } },
-    }),
-  ]);
+  const [words, totalCount, overallCount, missingMeaningCount, lessons] =
+    await Promise.all([
+      prisma.word.findMany({
+        where,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        take,
+        include: { lesson: { select: { name: true } } },
+      }),
+      prisma.word.count({ where }),
+      prisma.word.count({ where: baseWhere }),
+      prisma.word.count({
+        where: {
+          userId,
+          ...(lessonId ? { lessonId } : {}),
+          OR: [{ meaning: null }, { meaning: "" }],
+        },
+      }),
+      prisma.lesson.findMany({
+        where: { userId },
+        orderBy: { createdAt: "asc" },
+        include: { _count: { select: { words: true } } },
+      }),
+    ]);
 
   const hasMore = words.length < totalCount;
   const sharedParams = {
@@ -119,6 +131,13 @@ export default async function WordsPage({
           ⬇ Xuất dữ liệu (.csv — mở bằng Excel)
         </a>
       </div>
+
+      {missingMeaningCount > 0 && (
+        <AutoFillMissingButton
+          count={missingMeaningCount}
+          lessonId={lessonId}
+        />
+      )}
 
       <div className="w-full max-w-xl">
         <LessonManager lessons={lessons} />

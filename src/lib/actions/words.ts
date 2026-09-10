@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/lib/auth";
+import { lookupWord } from "@/lib/dictionary";
 import { prisma } from "@/lib/prisma";
 
 async function requireUserId() {
@@ -274,4 +275,68 @@ export async function reviewWord(id: string, remembered: boolean) {
   revalidatePath("/review");
   revalidatePath("/words");
   revalidatePath("/");
+}
+
+// Số từ xử lý mỗi lần gọi + số lượt tra chạy song song. Giữ nhỏ để không quá
+// thời gian chạy của Vercel. Phía client gọi lặp lại tới khi hết từ chưa có nghĩa.
+const AUTOFILL_BATCH = 8;
+const AUTOFILL_CONCURRENCY = 3;
+
+function missingMeaningFilter() {
+  return { OR: [{ meaning: null }, { meaning: "" }] };
+}
+
+// Điền tự động một mẻ từ chưa có nghĩa: tra từ điển, chỉ điền vào ô còn trống.
+// `attemptedIds`: các từ đã thử ở những lần gọi trước trong cùng đợt (để không
+// lặp lại từ mà từ điển không tra được).
+export async function autoFillMissing(
+  attemptedIds: string[],
+  lessonId?: string,
+): Promise<{ processedIds: string[]; filledMeaning: number }> {
+  const userId = await requireUserId();
+
+  const safeAttempted = attemptedIds.filter(
+    (id) => typeof id === "string" && id.length > 0,
+  );
+
+  const where = {
+    userId,
+    ...(lessonId ? { lessonId } : {}),
+    ...missingMeaningFilter(),
+    ...(safeAttempted.length ? { id: { notIn: safeAttempted } } : {}),
+  };
+
+  const batch = await prisma.word.findMany({
+    where,
+    select: { id: true, term: true, ipa: true, example: true, definitionEn: true },
+    orderBy: { createdAt: "asc" },
+    take: AUTOFILL_BATCH,
+  });
+
+  let filledMeaning = 0;
+  for (let i = 0; i < batch.length; i += AUTOFILL_CONCURRENCY) {
+    const slice = batch.slice(i, i + AUTOFILL_CONCURRENCY);
+    const results = await Promise.all(
+      slice.map(async (w) => ({ w, outcome: await lookupWord(w.term) })),
+    );
+    for (const { w, outcome } of results) {
+      if (!outcome.ok) continue;
+      const r = outcome.data;
+      await prisma.word.update({
+        where: { id: w.id },
+        data: {
+          meaning: r.meaning || undefined,
+          ipa: w.ipa ? undefined : r.ipa || undefined,
+          example: w.example ? undefined : r.example || undefined,
+          definitionEn: w.definitionEn
+            ? undefined
+            : r.definitionEn || undefined,
+        },
+      });
+      if (r.meaning) filledMeaning += 1;
+    }
+  }
+
+  revalidatePath("/words");
+  return { processedIds: batch.map((w) => w.id), filledMeaning };
 }
