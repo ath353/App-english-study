@@ -219,27 +219,53 @@ export async function deleteWords(ids: string[]) {
   revalidatePath("/words");
 }
 
-const STATUS_ORDER = ["NEW", "LEARNING", "KNOWN"] as const;
+// Lịch ôn tập kiểu Leitner. Mỗi từ ở một "hộp" 1..5; nhớ thì lên hộp, quên thì
+// về hộp 1. Số ngày chờ tới lần ôn kế tiếp theo từng hộp:
+const MAX_BOX = 5;
+const BOX_INTERVAL_DAYS: Record<number, number> = {
+  1: 1,
+  2: 3,
+  3: 7,
+  4: 14,
+  5: 30,
+};
+
+function boxToStatus(box: number): "NEW" | "LEARNING" | "KNOWN" {
+  if (box <= 1) return "NEW";
+  if (box <= 3) return "LEARNING";
+  return "KNOWN";
+}
+
+// Ngày đến hạn = 0h sáng, cách hôm nay `days` ngày. Dùng 0h để một từ hẹn
+// "ngày mai" là đến hạn ngay từ đầu ngày mai, không phải đúng giờ này ngày mai.
+function dueDateAfterDays(days: number): Date {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + days);
+  return d;
+}
 
 export async function reviewWord(id: string, remembered: boolean) {
   const userId = await requireUserId();
-  const word = await prisma.word.findFirst({ where: { id, userId } });
+  const word = await prisma.word.findFirst({
+    where: { id, userId },
+    select: { box: true },
+  });
   if (!word) return;
 
-  const newStatus = remembered
-    ? STATUS_ORDER[
-        Math.min(
-          STATUS_ORDER.indexOf(word.status) + 1,
-          STATUS_ORDER.length - 1,
-        )
-      ]
-    : "NEW";
+  const newBox = remembered ? Math.min(word.box + 1, MAX_BOX) : 1;
 
   await prisma.word.updateMany({
     where: { id, userId },
-    data: { status: newStatus, lastReviewedAt: new Date() },
+    data: {
+      box: newBox,
+      status: boxToStatus(newBox),
+      dueAt: dueDateAfterDays(BOX_INTERVAL_DAYS[newBox]),
+      lastReviewedAt: new Date(),
+    },
   });
 
   revalidatePath("/review");
   revalidatePath("/words");
+  revalidatePath("/");
 }
