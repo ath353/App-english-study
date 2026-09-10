@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useSyncExternalStore, useTransition } from "react";
 
 import {
   deleteWord,
@@ -24,21 +24,93 @@ type Word = {
 
 type Lesson = { id: string; name: string };
 
-const STATUS_META: Record<Word["status"], { label: string; className: string }> =
-  {
-    NEW: { label: "Mới", className: "bg-surface-2 text-muted" },
-    LEARNING: {
-      label: "Đang học",
-      className: "bg-amber-500/15 text-amber-600",
-    },
-    KNOWN: {
-      label: "Đã thuộc",
-      className: "bg-emerald-500/15 text-emerald-600",
-    },
-  };
+const STATUS_META: Record<
+  Word["status"],
+  { label: string; badge: string; edge: string }
+> = {
+  NEW: {
+    label: "Mới",
+    badge: "bg-surface-2 text-muted",
+    edge: "border-l-line",
+  },
+  LEARNING: {
+    label: "Đang học",
+    badge: "bg-amber-500/15 text-amber-600",
+    edge: "border-l-amber-400",
+  },
+  KNOWN: {
+    label: "Đã thuộc",
+    badge: "bg-emerald-500/15 text-emerald-600",
+    edge: "border-l-emerald-400",
+  },
+};
 
 const inputClass =
   "rounded-lg border border-line px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
+
+// Ghi nhớ kiểu hiển thị (thẻ / bảng) riêng cho trình duyệt này.
+const VIEW_KEY = "words-view";
+function useSavedView(): ["card" | "table", (v: "card" | "table") => void] {
+  const view = useSyncExternalStore(
+    (cb) => {
+      window.addEventListener("words-view-change", cb);
+      return () => window.removeEventListener("words-view-change", cb);
+    },
+    () => {
+      try {
+        return localStorage.getItem(VIEW_KEY) === "table" ? "table" : "card";
+      } catch {
+        return "card";
+      }
+    },
+    () => "card" as const,
+  );
+  const setView = (v: "card" | "table") => {
+    try {
+      localStorage.setItem(VIEW_KEY, v);
+    } catch {
+      /* bỏ qua nếu trình duyệt chặn localStorage */
+    }
+    window.dispatchEvent(new Event("words-view-change"));
+  };
+  return [view, setView];
+}
+
+// Nút Sửa / Xoá dùng chung cho cả thẻ lẫn bảng.
+function RowActions({
+  onEdit,
+  onDelete,
+  disabled,
+  revealOnHover,
+}: {
+  onEdit: () => void;
+  onDelete: () => void;
+  disabled: boolean;
+  revealOnHover?: boolean;
+}) {
+  const reveal = revealOnHover
+    ? "hover-device:opacity-0 hover-device:group-hover:opacity-100"
+    : "";
+  return (
+    <div
+      className={`flex shrink-0 gap-1 transition-opacity ${reveal}`}
+    >
+      <button
+        onClick={onEdit}
+        className="rounded-md bg-surface-2 px-2 py-1 text-xs font-medium text-fg-soft hover:bg-surface-2-hover"
+      >
+        Sửa
+      </button>
+      <button
+        disabled={disabled}
+        onClick={onDelete}
+        className="rounded-md bg-surface-2 px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-500/15 disabled:opacity-50"
+      >
+        Xoá
+      </button>
+    </div>
+  );
+}
 
 function EditWordForm({
   word,
@@ -209,51 +281,48 @@ export function WordList({
   lessons: Lesson[];
 }) {
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isPending, startTransition] = useTransition();
+  const [view, setView] = useSavedView();
 
-  // Chỉ tính những ID đang thực sự hiện trong danh sách hiện tại — tránh trường hợp
-  // đổi bộ lọc/tìm kiếm rồi lỡ tay xoá nhầm từ không còn hiển thị trên màn hình.
+  // Chỉ tính những ID đang thực sự hiện trong danh sách hiện tại — tránh xoá nhầm
+  // từ không còn hiển thị sau khi đổi bộ lọc.
   const activeSelected = words.filter((w) => selectedIds.has(w.id));
+
+  function exitSelection() {
+    setSelectionMode(false);
+    setSelectedIds(new Set());
+  }
 
   function toggleSelected(id: string) {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   }
 
   function toggleSelectAll() {
-    if (activeSelected.length === words.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(words.map((w) => w.id)));
-    }
+    if (activeSelected.length === words.length) setSelectedIds(new Set());
+    else setSelectedIds(new Set(words.map((w) => w.id)));
   }
 
   function handleBulkDelete() {
     if (activeSelected.length === 0) return;
-    if (
-      confirm(
-        `Xoá ${activeSelected.length} từ đã chọn? Không thể hoàn tác.`,
-      )
-    ) {
-      const ids = activeSelected.map((w) => w.id);
-      startTransition(async () => {
-        await deleteWords(ids);
-        setSelectedIds(new Set());
-      });
-    }
+    if (!confirm(`Xoá ${activeSelected.length} từ đã chọn? Không thể hoàn tác.`))
+      return;
+    const ids = activeSelected.map((w) => w.id);
+    startTransition(async () => {
+      await deleteWords(ids);
+      exitSelection();
+    });
   }
 
   function handleBulkMove(e: React.ChangeEvent<HTMLSelectElement>) {
     const value = e.target.value;
-    e.target.value = ""; // đưa dropdown về trạng thái mặc định
+    e.target.value = "";
     if (value === "" || activeSelected.length === 0) return;
     const lessonId = value === "__none__" ? null : value;
     const label =
@@ -264,7 +333,14 @@ export function WordList({
     const ids = activeSelected.map((w) => w.id);
     startTransition(async () => {
       await moveWords(ids, lessonId);
-      setSelectedIds(new Set());
+      exitSelection();
+    });
+  }
+
+  function deleteOne(word: Word) {
+    if (!confirm(`Xoá từ "${word.term}"?`)) return;
+    startTransition(() => {
+      deleteWord(word.id);
     });
   }
 
@@ -276,138 +352,252 @@ export function WordList({
     );
   }
 
-  return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between gap-2 text-sm">
-        <label className="flex items-center gap-2 text-fg-soft">
-          <input
-            type="checkbox"
-            checked={activeSelected.length === words.length}
-            onChange={toggleSelectAll}
-            className="h-4 w-4 rounded border-line"
-          />
-          Chọn tất cả ({words.length})
-        </label>
-
-        {activeSelected.length > 0 && (
-          <div className="flex items-center gap-2">
-            {lessons.length > 0 && (
-              <select
-                onChange={handleBulkMove}
-                disabled={isPending}
-                defaultValue=""
-                aria-label="Chuyển từ đã chọn sang Bài khác"
-                className="rounded-full border border-line bg-surface px-3 py-1.5 text-sm font-medium text-fg-soft disabled:opacity-50"
-              >
-                <option value="" disabled>
-                  Chuyển sang Bài…
+  const toolbar = (
+    <div className="flex flex-wrap items-center gap-2 text-sm">
+      {selectionMode ? (
+        <>
+          <label className="flex items-center gap-2 text-fg-soft">
+            <input
+              type="checkbox"
+              checked={activeSelected.length === words.length}
+              onChange={toggleSelectAll}
+              className="h-4 w-4 rounded border-line"
+            />
+            Chọn tất cả ({words.length})
+          </label>
+          {activeSelected.length > 0 && lessons.length > 0 && (
+            <select
+              onChange={handleBulkMove}
+              disabled={isPending}
+              defaultValue=""
+              aria-label="Chuyển từ đã chọn sang Bài khác"
+              className="rounded-full border border-line bg-surface px-3 py-1.5 font-medium text-fg-soft disabled:opacity-50"
+            >
+              <option value="" disabled>
+                Chuyển sang Bài…
+              </option>
+              <option value="__none__">-- Bỏ khỏi Bài --</option>
+              {lessons.map((lesson) => (
+                <option key={lesson.id} value={lesson.id}>
+                  {lesson.name}
                 </option>
-                <option value="__none__">-- Bỏ khỏi Bài --</option>
-                {lessons.map((lesson) => (
-                  <option key={lesson.id} value={lesson.id}>
-                    {lesson.name}
-                  </option>
-                ))}
-              </select>
-            )}
+              ))}
+            </select>
+          )}
+          {activeSelected.length > 0 && (
             <button
               onClick={handleBulkDelete}
               disabled={isPending}
-              className="rounded-full bg-red-600 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-red-700 disabled:opacity-50"
+              className="rounded-full bg-red-600 px-4 py-1.5 font-semibold text-white shadow-sm hover:bg-red-700 disabled:opacity-50"
             >
               Xoá đã chọn ({activeSelected.length})
             </button>
-          </div>
-        )}
-      </div>
-
-      <ul className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {words.map((word) => (
-        <li
-          key={word.id}
-          className={`rounded-2xl border border-line bg-surface p-5 shadow-sm ${
-            editingId === word.id ? "col-span-full" : ""
-          }`}
+          )}
+          <button
+            onClick={exitSelection}
+            className="rounded-full bg-surface-2 px-4 py-1.5 font-medium text-fg-soft hover:bg-surface-2-hover"
+          >
+            Xong
+          </button>
+        </>
+      ) : (
+        <button
+          onClick={() => setSelectionMode(true)}
+          className="rounded-full bg-surface-2 px-4 py-1.5 font-medium text-fg-soft hover:bg-surface-2-hover"
         >
-          {editingId === word.id ? (
-            <EditWordForm
-              word={word}
-              lessons={lessons}
-              onDone={() => setEditingId(null)}
-            />
-          ) : (
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-start gap-2">
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.has(word.id)}
-                    onChange={() => toggleSelected(word.id)}
-                    className="mt-1.5 h-4 w-4 shrink-0 rounded border-line"
-                    aria-label={`Chọn từ ${word.term}`}
-                  />
-                  <div>
-                    <p className="flex items-center gap-1 text-lg font-semibold text-fg">
-                      {word.term}
-                      <SpeakButton text={word.term} />
-                    </p>
-                    {word.ipa && (
-                      <p className="text-sm text-faint">/{word.ipa}/</p>
-                    )}
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      <span
-                        className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_META[word.status].className}`}
-                      >
-                        {STATUS_META[word.status].label}
+          Chọn
+        </button>
+      )}
+
+      <div className="ml-auto flex overflow-hidden rounded-full border border-line">
+        {(["card", "table"] as const).map((v) => (
+          <button
+            key={v}
+            onClick={() => setView(v)}
+            className={`px-3 py-1.5 font-medium ${
+              view === v
+                ? "bg-indigo-600 text-white"
+                : "bg-surface text-fg-soft hover:bg-surface-2"
+            }`}
+          >
+            {v === "card" ? "Thẻ" : "Bảng"}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col gap-3">
+      {toolbar}
+
+      {view === "card" ? (
+        <ul className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {words.map((word) => (
+            <li
+              key={word.id}
+              className={`group rounded-2xl border border-l-4 border-line bg-surface p-4 shadow-sm ${
+                STATUS_META[word.status].edge
+              } ${editingId === word.id ? "col-span-full" : ""}`}
+            >
+              {editingId === word.id ? (
+                <EditWordForm
+                  word={word}
+                  lessons={lessons}
+                  onDone={() => setEditingId(null)}
+                />
+              ) : (
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex min-w-0 items-baseline gap-1.5">
+                      {selectionMode && (
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(word.id)}
+                          onChange={() => toggleSelected(word.id)}
+                          className="mr-1 h-4 w-4 self-center rounded border-line"
+                          aria-label={`Chọn từ ${word.term}`}
+                        />
+                      )}
+                      <span className="text-lg font-semibold text-fg">
+                        {word.term}
                       </span>
+                      {word.ipa && (
+                        <span className="text-sm text-faint">/{word.ipa}/</span>
+                      )}
+                      <SpeakButton text={word.term} />
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
                       {word.lesson && (
-                        <span className="inline-block rounded-full bg-indigo-500/10 px-2 py-0.5 text-xs font-medium text-indigo-600">
+                        <span className="hidden rounded-full bg-indigo-500/10 px-2 py-0.5 text-xs font-medium text-indigo-600 sm:inline">
                           {word.lesson.name}
                         </span>
                       )}
+                      <RowActions
+                        onEdit={() => setEditingId(word.id)}
+                        onDelete={() => deleteOne(word)}
+                        disabled={isPending}
+                        revealOnHover
+                      />
                     </div>
                   </div>
+
+                  {word.meaning ? (
+                    <p className="text-fg-soft">{word.meaning}</p>
+                  ) : (
+                    <p className="text-sm italic text-amber-600">
+                      Chưa có nghĩa — bấm Sửa để tự động điền
+                    </p>
+                  )}
+
+                  {(word.definitionEn || word.example) && (
+                    <div className="flex flex-col gap-0.5 border-t border-line pt-1.5 text-xs text-muted">
+                      {word.definitionEn && <p>📖 {word.definitionEn}</p>}
+                      {word.example && (
+                        <p className="italic">{word.example}</p>
+                      )}
+                    </div>
+                  )}
                 </div>
-                <div className="flex shrink-0 gap-3 pt-1">
-                  <button
-                    onClick={() => setEditingId(word.id)}
-                    className="text-sm font-medium text-indigo-600 hover:underline"
+              )}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="overflow-x-auto rounded-2xl border border-line">
+          <table className="w-full min-w-[640px] text-sm">
+            <thead>
+              <tr className="border-b border-line bg-surface-2 text-left text-xs uppercase text-muted">
+                {selectionMode && <th className="w-10 px-3 py-2"></th>}
+                <th className="px-3 py-2">Từ</th>
+                <th className="px-3 py-2">Nghĩa</th>
+                <th className="px-3 py-2">Bài</th>
+                <th className="px-3 py-2">Trạng thái</th>
+                <th className="px-3 py-2"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {words.map((word) => {
+                const cols = selectionMode ? 6 : 5;
+                if (editingId === word.id) {
+                  return (
+                    <tr key={word.id} className="border-b border-line">
+                      <td colSpan={cols} className="bg-surface p-3">
+                        <EditWordForm
+                          word={word}
+                          lessons={lessons}
+                          onDone={() => setEditingId(null)}
+                        />
+                      </td>
+                    </tr>
+                  );
+                }
+                return (
+                  <tr
+                    key={word.id}
+                    className="group border-b border-line last:border-0 hover:bg-surface-2/50"
                   >
-                    Sửa
-                  </button>
-                  <button
-                    disabled={isPending}
-                    onClick={() => {
-                      if (confirm(`Xoá từ "${word.term}"?`)) {
-                        startTransition(() => {
-                          deleteWord(word.id);
-                        });
-                      }
-                    }}
-                    className="text-sm font-medium text-red-500 hover:underline disabled:opacity-50"
-                  >
-                    Xoá
-                  </button>
-                </div>
-              </div>
-              {word.meaning ? (
-                <p className="text-fg-soft">{word.meaning}</p>
-              ) : (
-                <p className="text-sm italic text-amber-600">
-                  Chưa có nghĩa — bấm Sửa để tự động điền
-                </p>
-              )}
-              {word.definitionEn && (
-                <p className="text-xs text-muted">📖 {word.definitionEn}</p>
-              )}
-              {word.example && (
-                <p className="text-sm italic text-muted">{word.example}</p>
-              )}
-            </div>
-          )}
-        </li>
-      ))}
-      </ul>
+                    {selectionMode && (
+                      <td className="px-3 py-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(word.id)}
+                          onChange={() => toggleSelected(word.id)}
+                          className="h-4 w-4 rounded border-line"
+                          aria-label={`Chọn từ ${word.term}`}
+                        />
+                      </td>
+                    )}
+                    <td className="px-3 py-2 align-top">
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="font-semibold text-fg">
+                          {word.term}
+                        </span>
+                        <SpeakButton text={word.term} />
+                      </div>
+                      {word.ipa && (
+                        <div className="text-xs text-faint">/{word.ipa}/</div>
+                      )}
+                    </td>
+                    <td className="px-3 py-2 align-top">
+                      {word.meaning ? (
+                        <span className="text-fg-soft">{word.meaning}</span>
+                      ) : (
+                        <span className="text-xs italic text-amber-600">
+                          Chưa có nghĩa
+                        </span>
+                      )}
+                      {word.example && (
+                        <div className="truncate text-xs italic text-muted">
+                          {word.example}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-3 py-2 align-top text-muted">
+                      {word.lesson?.name ?? "—"}
+                    </td>
+                    <td className="px-3 py-2 align-top">
+                      <span
+                        className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_META[word.status].badge}`}
+                      >
+                        {STATUS_META[word.status].label}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 align-top">
+                      <RowActions
+                        onEdit={() => setEditingId(word.id)}
+                        onDelete={() => deleteOne(word)}
+                        disabled={isPending}
+                        revealOnHover
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

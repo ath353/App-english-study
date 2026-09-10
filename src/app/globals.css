@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Chỉ áp dụng trên thiết bị có con trỏ thật (chuột) — dùng để ẩn/hiện nút theo
+   rê chuột mà không làm hỏng trải nghiệm trên điện thoại cảm ứng. */
+@custom-variant hover-device (@media (hover: hover) and (pointer: fine));
+
 /* Bảng màu theo "vai trò" (semantic) — dùng chung cho cả sáng lẫn tối.
    Component chỉ nên dùng các lớp bg-surface / text-fg / border-line ... thay vì
    gọi thẳng slate-xxx, để đổi theme là đổi ở một chỗ. */
