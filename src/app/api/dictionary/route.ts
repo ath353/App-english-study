@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
+import { rateLimit } from "@/lib/rateLimit";
 
 // Thời gian chờ tối đa cho mỗi lần gọi API bên ngoài (ms). Quá hạn thì bỏ qua,
 // tránh để request của người dùng bị treo khi dịch vụ ngoài phản hồi chậm.
 const EXTERNAL_TIMEOUT = 6000;
+
+// Mỗi người tối đa 20 lần tra trong 1 phút — đủ dùng bình thường, chặn spam.
+const RATE_LIMIT = 20;
+const RATE_WINDOW_MS = 60_000;
 
 type DictionaryDefinition = {
   definition?: string;
@@ -49,6 +54,21 @@ export async function GET(request: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Chưa đăng nhập" }, { status: 401 });
+  }
+
+  const gate = rateLimit(
+    `dictionary:${session.user.id}`,
+    RATE_LIMIT,
+    RATE_WINDOW_MS,
+  );
+  if (!gate.ok) {
+    return NextResponse.json(
+      { error: "Bạn tra từ hơi nhanh, nghỉ một chút rồi thử lại nhé." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(gate.retryAfterSec) },
+      },
+    );
   }
 
   const word = request.nextUrl.searchParams.get("word")?.trim();
