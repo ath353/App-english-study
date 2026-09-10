@@ -2,7 +2,12 @@
 
 import { useState, useTransition } from "react";
 
-import { deleteWord, deleteWords, updateWord } from "@/lib/actions/words";
+import {
+  deleteWord,
+  deleteWords,
+  moveWords,
+  updateWord,
+} from "@/lib/actions/words";
 import { SpeakButton } from "@/components/SpeakButton";
 
 type Word = {
@@ -240,6 +245,23 @@ export function WordList({
     }
   }
 
+  function handleBulkMove(e: React.ChangeEvent<HTMLSelectElement>) {
+    const value = e.target.value;
+    e.target.value = ""; // đưa dropdown về trạng thái mặc định
+    if (value === "" || activeSelected.length === 0) return;
+    const lessonId = value === "__none__" ? null : value;
+    const label =
+      lessonId === null
+        ? "bỏ khỏi Bài"
+        : `chuyển sang "${lessons.find((l) => l.id === lessonId)?.name ?? ""}"`;
+    if (!confirm(`${activeSelected.length} từ đã chọn — ${label}?`)) return;
+    const ids = activeSelected.map((w) => w.id);
+    startTransition(async () => {
+      await moveWords(ids, lessonId);
+      setSelectedIds(new Set());
+    });
+  }
+
   if (words.length === 0) {
     return (
       <p className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
@@ -262,13 +284,34 @@ export function WordList({
         </label>
 
         {activeSelected.length > 0 && (
-          <button
-            onClick={handleBulkDelete}
-            disabled={isPending}
-            className="rounded-full bg-red-600 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-red-700 disabled:opacity-50"
-          >
-            Xoá đã chọn ({activeSelected.length})
-          </button>
+          <div className="flex items-center gap-2">
+            {lessons.length > 0 && (
+              <select
+                onChange={handleBulkMove}
+                disabled={isPending}
+                defaultValue=""
+                aria-label="Chuyển từ đã chọn sang Bài khác"
+                className="rounded-full border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 disabled:opacity-50"
+              >
+                <option value="" disabled>
+                  Chuyển sang Bài…
+                </option>
+                <option value="__none__">-- Bỏ khỏi Bài --</option>
+                {lessons.map((lesson) => (
+                  <option key={lesson.id} value={lesson.id}>
+                    {lesson.name}
+                  </option>
+                ))}
+              </select>
+            )}
+            <button
+              onClick={handleBulkDelete}
+              disabled={isPending}
+              className="rounded-full bg-red-600 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-red-700 disabled:opacity-50"
+            >
+              Xoá đã chọn ({activeSelected.length})
+            </button>
+          </div>
         )}
       </div>
 

@@ -226,6 +226,22 @@ export async function deleteWords(ids: string[]) {
   revalidatePath("/words");
 }
 
+// Chuyển nhiều từ sang một Bài khác (hoặc bỏ khỏi Bài nếu lessonId là null).
+export async function moveWords(ids: string[], lessonId: string | null) {
+  const userId = await requireUserId();
+  const cleanIds = ids.filter((id) => typeof id === "string" && id.length > 0);
+  if (cleanIds.length === 0) return;
+
+  const safeLessonId = await resolveLessonId(userId, lessonId);
+
+  await prisma.word.updateMany({
+    where: { id: { in: cleanIds }, userId },
+    data: { lessonId: safeLessonId },
+  });
+  revalidatePath("/words");
+  revalidatePath("/review");
+}
+
 // Lịch ôn tập kiểu Leitner. Mỗi từ ở một "hộp" 1..5; nhớ thì lên hộp, quên thì
 // về hộp 1. Số ngày chờ tới lần ôn kế tiếp theo từng hộp:
 const MAX_BOX = 5;
