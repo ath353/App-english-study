@@ -26,6 +26,28 @@ export async function createLesson(formData: FormData) {
   revalidatePath("/review");
 }
 
+const MAX_LESSON_NAME = 100;
+
+export async function renameLesson(
+  id: string,
+  name: string,
+): Promise<{ error: string } | undefined> {
+  const userId = await requireUserId();
+  const clean = name.trim();
+  if (!clean) return { error: "Tên bài không được để trống." };
+  if (clean.length > MAX_LESSON_NAME) {
+    return { error: `Tên bài không được dài quá ${MAX_LESSON_NAME} ký tự.` };
+  }
+
+  await prisma.lesson.updateMany({
+    where: { id, userId },
+    data: { name: clean },
+  });
+
+  revalidatePath("/words");
+  revalidatePath("/review");
+}
+
 export async function deleteLesson(id: string) {
   const userId = await requireUserId();
   await prisma.lesson.deleteMany({ where: { id, userId } });
