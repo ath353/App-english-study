@@ -18,28 +18,41 @@ export default async function ReviewPage({
   const userId = session.user.id;
 
   const { lesson: lessonId } = await searchParams;
-  const scopeWhere = { userId, ...(lessonId ? { lessonId } : {}) };
+  const lessonWhere =
+    lessonId === "none"
+      ? { lessonId: null }
+      : lessonId
+        ? { lessonId }
+        : {};
+  const scopeWhere = { userId, ...lessonWhere };
   const now = new Date();
 
-  const [dueWords, totalInScope, totalCount, statusGroups, lessons] =
-    await Promise.all([
-      prisma.word.findMany({
-        where: { ...scopeWhere, dueAt: { lte: now } },
-        orderBy: { dueAt: "asc" },
-      }),
-      prisma.word.count({ where: scopeWhere }),
-      prisma.word.count({ where: { userId } }),
-      prisma.word.groupBy({
-        by: ["status"],
-        where: scopeWhere,
-        _count: { _all: true },
-      }),
-      prisma.lesson.findMany({
-        where: { userId },
-        orderBy: { createdAt: "asc" },
-        include: { _count: { select: { words: true } } },
-      }),
-    ]);
+  const [
+    dueWords,
+    totalInScope,
+    totalCount,
+    unclassifiedCount,
+    statusGroups,
+    lessons,
+  ] = await Promise.all([
+    prisma.word.findMany({
+      where: { ...scopeWhere, dueAt: { lte: now } },
+      orderBy: { dueAt: "asc" },
+    }),
+    prisma.word.count({ where: scopeWhere }),
+    prisma.word.count({ where: { userId } }),
+    prisma.word.count({ where: { userId, lessonId: null } }),
+    prisma.word.groupBy({
+      by: ["status"],
+      where: scopeWhere,
+      _count: { _all: true },
+    }),
+    prisma.lesson.findMany({
+      where: { userId },
+      orderBy: { createdAt: "asc" },
+      include: { _count: { select: { words: true } } },
+    }),
+  ]);
 
   const countBy = (status: string) =>
     statusGroups.find((g) => g.status === status)?._count._all ?? 0;
@@ -56,6 +69,7 @@ export default async function ReviewPage({
         activeLessonId={lessonId}
         basePath="/review"
         totalCount={totalCount}
+        unclassifiedCount={unclassifiedCount}
       />
 
       {totalInScope > 0 && (

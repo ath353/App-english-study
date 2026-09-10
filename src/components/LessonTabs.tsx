@@ -11,12 +11,14 @@ export function LessonTabs({
   activeLessonId,
   basePath,
   totalCount,
+  unclassifiedCount = 0,
   extraParams = {},
 }: {
   lessons: Lesson[];
   activeLessonId?: string;
   basePath: string;
   totalCount: number;
+  unclassifiedCount?: number;
   extraParams?: Record<string, string>;
 }) {
   function buildHref(lessonId?: string) {
@@ -34,7 +36,7 @@ export function LessonTabs({
     }`;
   }
 
-  if (lessons.length === 0) return null;
+  if (lessons.length === 0 && unclassifiedCount === 0) return null;
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -55,6 +57,15 @@ export function LessonTabs({
           {lesson.name} ({lesson._count.words})
         </Link>
       ))}
+      {unclassifiedCount > 0 && (
+        <Link
+          href={buildHref("none")}
+          scroll={false}
+          className={pillClass(activeLessonId === "none")}
+        >
+          Chưa phân loại ({unclassifiedCount})
+        </Link>
+      )}
     </div>
   );
 }

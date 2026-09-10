@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import type { Prisma } from "@/generated/prisma/client";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -7,6 +8,7 @@ import { WordList } from "@/components/WordList";
 import { LessonManager } from "@/components/LessonManager";
 import { LessonTabs } from "@/components/LessonTabs";
 import { SearchForm } from "@/components/SearchForm";
+import { SortSelect } from "@/components/SortSelect";
 import { AutoFillMissingButton } from "@/components/AutoFillMissingButton";
 
 // Cho phép server action "điền tự động hàng loạt" chạy lâu hơn mặc định.
@@ -21,6 +23,12 @@ const STATUS_FILTERS = [
   { value: "KNOWN", label: "Đã thuộc" },
 ] as const;
 
+const SORTS: Record<string, Prisma.WordOrderByWithRelationInput[]> = {
+  new: [{ createdAt: "desc" }, { id: "desc" }],
+  az: [{ term: "asc" }, { id: "asc" }],
+  due: [{ dueAt: "asc" }, { id: "asc" }],
+};
+
 export default async function WordsPage({
   searchParams,
 }: {
@@ -29,6 +37,7 @@ export default async function WordsPage({
     limit?: string;
     lesson?: string;
     status?: string;
+    sort?: string;
   }>;
 }) {
   const session = await auth();
@@ -37,13 +46,35 @@ export default async function WordsPage({
   }
   const userId = session.user.id;
 
-  const { q, limit, lesson: lessonId, status } = await searchParams;
+  const {
+    q,
+    limit,
+    lesson: lessonId,
+    status,
+    sort: sortRaw,
+  } = await searchParams;
   const query = q?.trim() ?? "";
   const take = Number(limit) > 0 ? Number(limit) : PAGE_SIZE;
   const activeStatus =
     status === "NEW" || status === "LEARNING" || status === "KNOWN"
       ? (status as "NEW" | "LEARNING" | "KNOWN")
       : undefined;
+  const sort = sortRaw && sortRaw in SORTS ? sortRaw : "new";
+
+  // Ghép URL /words giữ nguyên các bộ lọc đang bật, chỉ đổi phần được truyền vào.
+  const hrefWith = (overrides: Record<string, string | undefined>) => {
+    const merged: Record<string, string | undefined> = {
+      q: query || undefined,
+      lesson: lessonId || undefined,
+      status: activeStatus,
+      sort: sort !== "new" ? sort : undefined,
+      ...overrides,
+    };
+    const params = new URLSearchParams();
+    for (const [k, v] of Object.entries(merged)) if (v) params.set(k, v);
+    const qs = params.toString();
+    return qs ? `/words?${qs}` : "/words";
+  };
 
   const baseWhere = {
     userId,
@@ -57,45 +88,52 @@ export default async function WordsPage({
       : {}),
     ...(activeStatus ? { status: activeStatus } : {}),
   };
-  const where = {
-    ...baseWhere,
-    ...(lessonId ? { lessonId } : {}),
-  };
+  const lessonWhere =
+    lessonId === "none"
+      ? { lessonId: null }
+      : lessonId
+        ? { lessonId }
+        : {};
+  const where = { ...baseWhere, ...lessonWhere };
 
-  const [words, totalCount, overallCount, missingMeaningCount, lessons] =
-    await Promise.all([
-      prisma.word.findMany({
-        where,
-        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-        take,
-        include: { lesson: { select: { name: true } } },
-      }),
-      prisma.word.count({ where }),
-      prisma.word.count({ where: baseWhere }),
-      prisma.word.count({
-        where: {
-          userId,
-          ...(lessonId ? { lessonId } : {}),
-          OR: [{ meaning: null }, { meaning: "" }],
-        },
-      }),
-      prisma.lesson.findMany({
-        where: { userId },
-        orderBy: { createdAt: "asc" },
-        include: { _count: { select: { words: true } } },
-      }),
-    ]);
+  const [
+    words,
+    totalCount,
+    overallCount,
+    unclassifiedCount,
+    missingMeaningCount,
+    lessons,
+  ] = await Promise.all([
+    prisma.word.findMany({
+      where,
+      orderBy: SORTS[sort],
+      take,
+      include: { lesson: { select: { name: true } } },
+    }),
+    prisma.word.count({ where }),
+    prisma.word.count({ where: baseWhere }),
+    prisma.word.count({ where: { userId, lessonId: null } }),
+    prisma.word.count({
+      where: {
+        userId,
+        ...lessonWhere,
+        OR: [{ meaning: null }, { meaning: "" }],
+      },
+    }),
+    prisma.lesson.findMany({
+      where: { userId },
+      orderBy: { createdAt: "asc" },
+      include: { _count: { select: { words: true } } },
+    }),
+  ]);
 
   const hasMore = words.length < totalCount;
-  const sharedParams = {
+  const tabsParams: Record<string, string> = {
     ...(query ? { q: query } : {}),
     ...(activeStatus ? { status: activeStatus } : {}),
+    ...(sort !== "new" ? { sort } : {}),
   };
-  const nextLimitParams = new URLSearchParams({
-    ...sharedParams,
-    ...(lessonId ? { lesson: lessonId } : {}),
-    limit: String(take + PAGE_SIZE),
-  });
+  const autoFillLessonId = lessonId === "none" ? undefined : lessonId;
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-6">
@@ -103,13 +141,13 @@ export default async function WordsPage({
         <h1 className="text-2xl font-bold text-slate-900">Từ vựng của tôi</h1>
         <div className="flex gap-2">
           <Link
-            href={`/words/bulk-add${lessonId ? `?lesson=${lessonId}` : ""}`}
+            href={`/words/bulk-add${autoFillLessonId ? `?lesson=${autoFillLessonId}` : ""}`}
             className="flex-1 whitespace-nowrap rounded-full bg-slate-100 px-4 py-2 text-center text-sm font-semibold text-slate-700 hover:bg-slate-200 sm:flex-none"
           >
             Nhập hàng loạt
           </Link>
           <Link
-            href={`/words/add${lessonId ? `?lesson=${lessonId}` : ""}`}
+            href={`/words/add${autoFillLessonId ? `?lesson=${autoFillLessonId}` : ""}`}
             className="flex-1 whitespace-nowrap rounded-full bg-indigo-600 px-4 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 sm:flex-none"
           >
             + Thêm từ
@@ -120,7 +158,7 @@ export default async function WordsPage({
       {missingMeaningCount > 0 && (
         <AutoFillMissingButton
           count={missingMeaningCount}
-          lessonId={lessonId}
+          lessonId={autoFillLessonId}
         />
       )}
 
@@ -132,6 +170,7 @@ export default async function WordsPage({
         defaultQuery={query}
         lessonId={lessonId}
         status={activeStatus}
+        sort={sort !== "new" ? sort : undefined}
       />
 
       <LessonTabs
@@ -139,22 +178,17 @@ export default async function WordsPage({
         activeLessonId={lessonId}
         basePath="/words"
         totalCount={overallCount}
-        extraParams={sharedParams}
+        unclassifiedCount={unclassifiedCount}
+        extraParams={tabsParams}
       />
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {STATUS_FILTERS.map((s) => {
-          const params = new URLSearchParams({
-            ...(query ? { q: query } : {}),
-            ...(lessonId ? { lesson: lessonId } : {}),
-            ...(s.value ? { status: s.value } : {}),
-          });
-          const qs = params.toString();
           const active = (activeStatus ?? "") === s.value;
           return (
             <Link
               key={s.value || "all"}
-              href={qs ? `/words?${qs}` : "/words"}
+              href={hrefWith({ status: s.value || undefined })}
               scroll={false}
               className={`rounded-full px-3 py-1.5 text-sm font-medium ${
                 active
@@ -166,6 +200,14 @@ export default async function WordsPage({
             </Link>
           );
         })}
+        <div className="ml-auto">
+          <SortSelect
+            value={sort}
+            q={query || undefined}
+            lessonId={lessonId}
+            status={activeStatus}
+          />
+        </div>
       </div>
 
       <p className="text-sm text-slate-500">
@@ -177,7 +219,7 @@ export default async function WordsPage({
 
       {hasMore && (
         <Link
-          href={`/words?${nextLimitParams.toString()}`}
+          href={hrefWith({ limit: String(take + PAGE_SIZE) })}
           scroll={false}
           className="self-center rounded-full bg-slate-100 px-5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200"
         >

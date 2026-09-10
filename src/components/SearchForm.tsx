@@ -6,10 +6,12 @@ export function SearchForm({
   defaultQuery,
   lessonId,
   status,
+  sort,
 }: {
   defaultQuery: string;
   lessonId?: string;
   status?: string;
+  sort?: string;
 }) {
   const router = useRouter();
 
@@ -22,6 +24,7 @@ export function SearchForm({
     if (q) params.set("q", q);
     if (lessonId) params.set("lesson", lessonId);
     if (status) params.set("status", status);
+    if (sort) params.set("sort", sort);
 
     const qs = params.toString();
     router.push(qs ? `/words?${qs}` : "/words", { scroll: false });
