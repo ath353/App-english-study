@@ -23,7 +23,6 @@ export function WordForm({
     meaning: "",
     ipa: "",
     example: "",
-    exampleTranslation: "",
     lessonId: defaultLessonId ?? "",
   };
   const [fields, setFields] = useState(emptyFields);
@@ -52,7 +51,6 @@ export function WordForm({
         meaning: data.meaning || f.meaning,
         ipa: data.ipa || f.ipa,
         example: data.example || f.example,
-        exampleTranslation: data.exampleTranslation || f.exampleTranslation,
       }));
     } catch {
       setLookupError("Có lỗi khi tra từ điển, thử lại sau.");
@@ -139,7 +137,7 @@ export function WordForm({
 
       <div className="flex flex-col gap-1">
         <label className={labelClass} htmlFor="example">
-          Câu ví dụ (tiếng Anh)
+          Câu ví dụ (Anh / Việt)
         </label>
         <textarea
           id="example"
@@ -147,22 +145,7 @@ export function WordForm({
           value={fields.example}
           onChange={(e) => setFields((f) => ({ ...f, example: e.target.value }))}
           rows={2}
-          className={inputClass}
-        />
-      </div>
-
-      <div className="flex flex-col gap-1">
-        <label className={labelClass} htmlFor="exampleTranslation">
-          Dịch nghĩa câu ví dụ
-        </label>
-        <textarea
-          id="exampleTranslation"
-          name="exampleTranslation"
-          value={fields.exampleTranslation}
-          onChange={(e) =>
-            setFields((f) => ({ ...f, exampleTranslation: e.target.value }))
-          }
-          rows={2}
+          placeholder="vd: I hate you / Tôi ghét bạn"
           className={inputClass}
         />
       </div>

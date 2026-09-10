@@ -188,7 +188,8 @@ tên thư mục trong `src/app/` = một phần đường dẫn URL.
 2. `src/app/api/dictionary/route.ts` trên server:
    - Gọi API từ điển miễn phí bên ngoài (`dictionaryapi.dev`) lấy phiên âm + ví dụ.
    - Gọi API dịch (`MyMemory`) dịch từ và câu ví dụ sang tiếng Việt.
-   - Trả gói kết quả `{ term, ipa, meaning, example, exampleTranslation }`.
+   - Trả gói kết quả `{ term, ipa, meaning, example }` — `example` gộp sẵn dạng
+     "câu tiếng Anh / bản dịch tiếng Việt".
 3. Form điền sẵn các ô đó cho bạn (bạn vẫn sửa được trước khi lưu).
 
 ### 5e. Khi bạn ôn tập (`/review`)
@@ -227,8 +228,7 @@ Mỗi người đăng nhập Google = 1 dòng. Có `id`, `name`, `email`, `image
 | `term` | Từ tiếng Anh |
 | `meaning` | Nghĩa tiếng Việt (có thể trống khi nhập hàng loạt) |
 | `ipa` | Phiên âm |
-| `example` | Câu ví dụ tiếng Anh |
-| `exampleTranslation` | Dịch câu ví dụ |
+| `example` | Câu ví dụ, dạng "câu tiếng Anh / bản dịch tiếng Việt" |
 | `status` | `NEW` / `LEARNING` / `KNOWN` — mức thuộc |
 | `lastReviewedAt` | Lần ôn gần nhất |
 | `createdAt`, `updatedAt` | Thời điểm tạo / sửa |

@@ -10,7 +10,6 @@ type Word = {
   meaning: string | null;
   ipa: string | null;
   example: string | null;
-  exampleTranslation: string | null;
   lessonId: string | null;
   lesson: { name: string } | null;
 };
@@ -34,7 +33,6 @@ function EditWordForm({
     meaning: word.meaning ?? "",
     ipa: word.ipa ?? "",
     example: word.example ?? "",
-    exampleTranslation: word.exampleTranslation ?? "",
     lessonId: word.lessonId ?? "",
   });
   const [isLookingUp, setIsLookingUp] = useState(false);
@@ -62,7 +60,6 @@ function EditWordForm({
         meaning: data.meaning || f.meaning,
         ipa: data.ipa || f.ipa,
         example: data.example || f.example,
-        exampleTranslation: data.exampleTranslation || f.exampleTranslation,
       }));
     } catch {
       setLookupError("Có lỗi khi tra từ điển, thử lại sau.");
@@ -125,17 +122,7 @@ function EditWordForm({
         name="example"
         value={fields.example}
         onChange={(e) => setFields((f) => ({ ...f, example: e.target.value }))}
-        placeholder="Câu ví dụ (tiếng Anh)"
-        rows={2}
-        className={inputClass}
-      />
-      <textarea
-        name="exampleTranslation"
-        value={fields.exampleTranslation}
-        onChange={(e) =>
-          setFields((f) => ({ ...f, exampleTranslation: e.target.value }))
-        }
-        placeholder="Dịch nghĩa câu ví dụ (tiếng Việt)"
+        placeholder="Câu ví dụ (Anh / Việt) — vd: I hate you / Tôi ghét bạn"
         rows={2}
         className={inputClass}
       />
@@ -327,11 +314,6 @@ export function WordList({
               )}
               {word.example && (
                 <p className="text-sm italic text-slate-500">{word.example}</p>
-              )}
-              {word.exampleTranslation && (
-                <p className="text-sm italic text-slate-400">
-                  {word.exampleTranslation}
-                </p>
               )}
             </div>
           )}

@@ -128,11 +128,16 @@ export async function GET(request: NextRequest) {
     translateToVietnamese(example),
   ]);
 
+  // Gộp câu ví dụ tiếng Anh và bản dịch tiếng Việt vào một chuỗi: "Anh / Việt"
+  const exampleCombined =
+    example && exampleTranslation
+      ? `${example} / ${exampleTranslation}`
+      : example;
+
   return NextResponse.json({
     term: entry?.word ?? word,
     ipa: ipa.replace(/^\/|\/$/g, ""),
     meaning,
-    example,
-    exampleTranslation,
+    example: exampleCombined,
   });
 }

@@ -35,7 +35,6 @@ const FIELD_LIMITS = {
   meaning: 500,
   ipa: 100,
   example: 1000,
-  exampleTranslation: 1000,
 } as const;
 
 function readWordFields(formData: FormData) {
@@ -43,16 +42,12 @@ function readWordFields(formData: FormData) {
   const meaning = String(formData.get("meaning") ?? "").trim();
   const ipa = String(formData.get("ipa") ?? "").trim();
   const example = String(formData.get("example") ?? "").trim();
-  const exampleTranslation = String(
-    formData.get("exampleTranslation") ?? "",
-  ).trim();
   const lessonId = String(formData.get("lessonId") ?? "").trim();
   return {
     term,
     meaning,
     ipa: ipa || null,
     example: example || null,
-    exampleTranslation: exampleTranslation || null,
     lessonId: lessonId || null,
   };
 }
@@ -69,7 +64,6 @@ function validateWordFields(
     ["Nghĩa", fields.meaning, FIELD_LIMITS.meaning],
     ["Phiên âm", fields.ipa, FIELD_LIMITS.ipa],
     ["Câu ví dụ", fields.example, FIELD_LIMITS.example],
-    ["Dịch câu ví dụ", fields.exampleTranslation, FIELD_LIMITS.exampleTranslation],
   ];
   for (const [label, value, limit] of tooLong) {
     if (value && value.length > limit) {
@@ -110,7 +104,7 @@ export async function createWord(
     return { error: `Từ "${fields.term}" đã có trong danh sách rồi.` };
   }
 
-  const { term, meaning, ipa, example, exampleTranslation, lessonId } = fields;
+  const { term, meaning, ipa, example, lessonId } = fields;
   const safeLessonId = await resolveLessonId(userId, lessonId);
 
   await prisma.word.create({
@@ -120,7 +114,6 @@ export async function createWord(
       meaning,
       ipa,
       example,
-      exampleTranslation,
       lessonId: safeLessonId,
     },
   });
@@ -142,7 +135,7 @@ export async function updateWord(
     return { error: `Đã có từ "${fields.term}" khác trong danh sách.` };
   }
 
-  const { term, meaning, ipa, example, exampleTranslation, lessonId } = fields;
+  const { term, meaning, ipa, example, lessonId } = fields;
   const safeLessonId = await resolveLessonId(userId, lessonId);
 
   await prisma.word.updateMany({
@@ -152,7 +145,6 @@ export async function updateWord(
       meaning,
       ipa,
       example,
-      exampleTranslation,
       lessonId: safeLessonId,
     },
   });

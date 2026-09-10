@@ -10,7 +10,6 @@ type Word = {
   meaning: string | null;
   ipa: string | null;
   example: string | null;
-  exampleTranslation: string | null;
 };
 
 export function FlashcardReview({ words }: { words: Word[] }) {
@@ -96,11 +95,6 @@ export function FlashcardReview({ words }: { words: Word[] }) {
             )}
             {word.example && (
               <p className="text-sm italic text-slate-500">{word.example}</p>
-            )}
-            {word.exampleTranslation && (
-              <p className="text-sm italic text-slate-400">
-                {word.exampleTranslation}
-              </p>
             )}
           </div>
         )}
