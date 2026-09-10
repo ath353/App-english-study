@@ -95,15 +95,24 @@ export function FlashcardReview({ words }: { words: Word[] }) {
         </p>
       </div>
 
-      <button
-        type="button"
-        onClick={() => setFlipped((f) => !f)}
-        className="flex min-h-[240px] w-full max-w-md flex-col items-center justify-center gap-3 rounded-3xl border border-line bg-surface p-8 text-center shadow-sm transition hover:shadow-md"
+      <div
+        key={`${word.id}-${index}`}
+        className="flip-scene w-full max-w-md animate-fade-in"
       >
-        {!flipped ? (
-          <p className="text-4xl font-bold text-fg">{word.term}</p>
-        ) : (
-          <div className="flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={() => setFlipped((f) => !f)}
+          aria-label={flipped ? "Ẩn đáp án" : "Lật thẻ xem đáp án"}
+          className={`flip-inner min-h-[300px] ${flipped ? "is-flipped" : ""}`}
+        >
+          <div className="flip-face gap-2 rounded-3xl border border-line bg-surface p-6 text-center shadow-sm">
+            <p className="text-4xl font-bold text-fg">{word.term}</p>
+            {word.ipa && (
+              <p className="text-lg text-faint">/{word.ipa}/</p>
+            )}
+            <p className="mt-2 text-xs text-faint">Chạm để lật</p>
+          </div>
+          <div className="flip-face flip-back gap-2 rounded-3xl border border-line bg-surface p-6 text-center shadow-sm">
             <p className="text-3xl font-bold text-fg">
               {word.term}
               {word.ipa && (
@@ -127,8 +136,8 @@ export function FlashcardReview({ words }: { words: Word[] }) {
             )}
             <p className="text-xs text-faint">Hộp {word.box}/5</p>
           </div>
-        )}
-      </button>
+        </button>
+      </div>
 
       <SpeakButton
         text={word.term}
