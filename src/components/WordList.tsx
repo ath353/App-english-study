@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 
 import { deleteWord, deleteWords, updateWord } from "@/lib/actions/words";
+import { SpeakButton } from "@/components/SpeakButton";
 
 type Word = {
   id: string;
@@ -100,6 +101,12 @@ function EditWordForm({
           required
           className={`flex-1 ${inputClass}`}
         />
+        {fields.term.trim() && (
+          <SpeakButton
+            text={fields.term}
+            className="shrink-0 rounded-lg bg-slate-100 px-3 text-slate-600 hover:bg-slate-200"
+          />
+        )}
         <button
           type="button"
           onClick={handleAutoFill}
@@ -278,8 +285,9 @@ export function WordList({
                     aria-label={`Chọn từ ${word.term}`}
                   />
                   <div>
-                    <p className="text-lg font-semibold text-slate-900">
+                    <p className="flex items-center gap-1 text-lg font-semibold text-slate-900">
                       {word.term}
+                      <SpeakButton text={word.term} />
                     </p>
                     {word.ipa && (
                       <p className="text-sm text-slate-400">/{word.ipa}/</p>

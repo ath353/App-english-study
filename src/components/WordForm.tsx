@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 
 import { createWord } from "@/lib/actions/words";
+import { SpeakButton } from "@/components/SpeakButton";
 
 type Lesson = { id: string; name: string };
 
@@ -94,6 +95,12 @@ export function WordForm({
             required
             className={`flex-1 ${inputClass}`}
           />
+          {fields.term.trim() && (
+            <SpeakButton
+              text={fields.term}
+              className="shrink-0 rounded-lg bg-slate-100 px-3 text-slate-600 hover:bg-slate-200"
+            />
+          )}
           <button
             type="button"
             onClick={handleAutoFill}

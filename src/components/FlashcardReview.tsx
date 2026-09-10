@@ -3,6 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 
 import { reviewWord } from "@/lib/actions/words";
+import { SpeakButton } from "@/components/SpeakButton";
 
 type Word = {
   id: string;
@@ -124,6 +125,12 @@ export function FlashcardReview({ words }: { words: Word[] }) {
           </div>
         )}
       </button>
+
+      <SpeakButton
+        text={word.term}
+        label="Nghe phát âm"
+        className="flex items-center gap-1 rounded-full bg-slate-100 px-4 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-200"
+      />
 
       {!flipped ? (
         <button
