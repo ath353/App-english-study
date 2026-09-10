@@ -20,6 +20,7 @@ export async function GET() {
     meaning: w.meaning,
     ipa: w.ipa,
     example: w.example,
+    definitionEn: w.definitionEn,
     lesson: w.lesson?.name ?? null,
     status: w.status,
     createdAt: w.createdAt,

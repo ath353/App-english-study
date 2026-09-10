@@ -11,6 +11,7 @@ type Word = {
   meaning: string | null;
   ipa: string | null;
   example: string | null;
+  definitionEn: string | null;
   status: "NEW" | "LEARNING" | "KNOWN";
   lessonId: string | null;
   lesson: { name: string } | null;
@@ -42,6 +43,7 @@ function EditWordForm({
     meaning: word.meaning ?? "",
     ipa: word.ipa ?? "",
     example: word.example ?? "",
+    definitionEn: word.definitionEn ?? "",
     lessonId: word.lessonId ?? "",
   });
   const [isLookingUp, setIsLookingUp] = useState(false);
@@ -69,6 +71,7 @@ function EditWordForm({
         meaning: data.meaning || f.meaning,
         ipa: data.ipa || f.ipa,
         example: data.example || f.example,
+        definitionEn: data.definitionEn || f.definitionEn,
       }));
     } catch {
       setLookupError("Có lỗi khi tra từ điển, thử lại sau.");
@@ -124,6 +127,16 @@ function EditWordForm({
         onChange={(e) => setFields((f) => ({ ...f, meaning: e.target.value }))}
         placeholder="Nghĩa tiếng Việt"
         required
+        className={inputClass}
+      />
+      <textarea
+        name="definitionEn"
+        value={fields.definitionEn}
+        onChange={(e) =>
+          setFields((f) => ({ ...f, definitionEn: e.target.value }))
+        }
+        placeholder="Định nghĩa tiếng Anh (tự động điền, để tham khảo)"
+        rows={2}
         className={inputClass}
       />
       <input
@@ -334,6 +347,9 @@ export function WordList({
                 <p className="text-sm italic text-amber-600">
                   Chưa có nghĩa — bấm Sửa để tự động điền
                 </p>
+              )}
+              {word.definitionEn && (
+                <p className="text-xs text-slate-500">📖 {word.definitionEn}</p>
               )}
               {word.example && (
                 <p className="text-sm italic text-slate-500">{word.example}</p>

@@ -17,6 +17,7 @@ type DictionaryDefinition = {
 };
 
 type DictionaryMeaning = {
+  partOfSpeech?: string;
   definitions?: DictionaryDefinition[];
 };
 
@@ -115,13 +116,20 @@ export async function GET(request: NextRequest) {
     entry?.phonetic || entry?.phonetics?.find((p) => p.text)?.text || "";
 
   let example = "";
+  const defParts: string[] = [];
   for (const m of entry?.meanings ?? []) {
+    const firstDef = m.definitions?.find((d) => d.definition)?.definition;
+    if (firstDef && defParts.length < 2) {
+      const pos = m.partOfSpeech ? `(${m.partOfSpeech}) ` : "";
+      defParts.push(`${pos}${firstDef}`);
+    }
     for (const d of m.definitions ?? []) {
       if (!example && d.example) example = d.example;
       if (example) break;
     }
-    if (example) break;
+    if (example && defParts.length >= 2) break;
   }
+  const definitionEn = defParts.join("; ");
 
   const [meaning, exampleTranslation] = await Promise.all([
     translateToVietnamese(word),
@@ -139,5 +147,6 @@ export async function GET(request: NextRequest) {
     ipa: ipa.replace(/^\/|\/$/g, ""),
     meaning,
     example: exampleCombined,
+    definitionEn,
   });
 }

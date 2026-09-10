@@ -77,6 +77,7 @@ model Word {
   meaning            String? // nghĩa tiếng Việt (có thể chưa có khi nhập hàng loạt)
   ipa                String? // phiên âm IPA
   example            String? // câu ví dụ, dạng "câu tiếng Anh / bản dịch tiếng Việt"
+  definitionEn       String? // định nghĩa tiếng Anh + loại từ (lấy tự động, để tham khảo)
   status             WordStatus @default(NEW)
   box                Int        @default(1) // hộp Leitner hiện tại (1..5), càng cao càng thuộc
   dueAt              DateTime   @default(now()) // ngày đến hạn ôn tiếp theo

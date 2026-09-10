@@ -24,6 +24,7 @@ export function WordForm({
     meaning: "",
     ipa: "",
     example: "",
+    definitionEn: "",
     lessonId: defaultLessonId ?? "",
   };
   const [fields, setFields] = useState(emptyFields);
@@ -52,6 +53,7 @@ export function WordForm({
         meaning: data.meaning || f.meaning,
         ipa: data.ipa || f.ipa,
         example: data.example || f.example,
+        definitionEn: data.definitionEn || f.definitionEn,
       }));
     } catch {
       setLookupError("Có lỗi khi tra từ điển, thử lại sau.");
@@ -124,6 +126,22 @@ export function WordForm({
           onChange={(e) => setFields((f) => ({ ...f, meaning: e.target.value }))}
           placeholder="vd: quả táo"
           required
+          className={inputClass}
+        />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className={labelClass} htmlFor="definitionEn">
+          Định nghĩa tiếng Anh (tự động điền, để tham khảo khi viết nghĩa)
+        </label>
+        <textarea
+          id="definitionEn"
+          name="definitionEn"
+          value={fields.definitionEn}
+          onChange={(e) =>
+            setFields((f) => ({ ...f, definitionEn: e.target.value }))
+          }
+          rows={2}
           className={inputClass}
         />
       </div>

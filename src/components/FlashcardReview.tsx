@@ -11,6 +11,7 @@ type Word = {
   meaning: string | null;
   ipa: string | null;
   example: string | null;
+  definitionEn: string | null;
   box: number;
 };
 
@@ -120,6 +121,9 @@ export function FlashcardReview({ words }: { words: Word[] }) {
             )}
             {word.example && (
               <p className="text-sm italic text-slate-500">{word.example}</p>
+            )}
+            {word.definitionEn && (
+              <p className="text-xs text-slate-400">📖 {word.definitionEn}</p>
             )}
             <p className="text-xs text-slate-400">Hộp {word.box}/5</p>
           </div>

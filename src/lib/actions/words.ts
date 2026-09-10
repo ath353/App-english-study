@@ -35,6 +35,7 @@ const FIELD_LIMITS = {
   meaning: 500,
   ipa: 100,
   example: 1000,
+  definitionEn: 1000,
 } as const;
 
 function readWordFields(formData: FormData) {
@@ -42,12 +43,14 @@ function readWordFields(formData: FormData) {
   const meaning = String(formData.get("meaning") ?? "").trim();
   const ipa = String(formData.get("ipa") ?? "").trim();
   const example = String(formData.get("example") ?? "").trim();
+  const definitionEn = String(formData.get("definitionEn") ?? "").trim();
   const lessonId = String(formData.get("lessonId") ?? "").trim();
   return {
     term,
     meaning,
     ipa: ipa || null,
     example: example || null,
+    definitionEn: definitionEn || null,
     lessonId: lessonId || null,
   };
 }
@@ -64,6 +67,7 @@ function validateWordFields(
     ["Nghĩa", fields.meaning, FIELD_LIMITS.meaning],
     ["Phiên âm", fields.ipa, FIELD_LIMITS.ipa],
     ["Câu ví dụ", fields.example, FIELD_LIMITS.example],
+    ["Định nghĩa tiếng Anh", fields.definitionEn, FIELD_LIMITS.definitionEn],
   ];
   for (const [label, value, limit] of tooLong) {
     if (value && value.length > limit) {
@@ -104,7 +108,7 @@ export async function createWord(
     return { error: `Từ "${fields.term}" đã có trong danh sách rồi.` };
   }
 
-  const { term, meaning, ipa, example, lessonId } = fields;
+  const { term, meaning, ipa, example, definitionEn, lessonId } = fields;
   const safeLessonId = await resolveLessonId(userId, lessonId);
 
   await prisma.word.create({
@@ -114,6 +118,7 @@ export async function createWord(
       meaning,
       ipa,
       example,
+      definitionEn,
       lessonId: safeLessonId,
     },
   });
@@ -135,7 +140,7 @@ export async function updateWord(
     return { error: `Đã có từ "${fields.term}" khác trong danh sách.` };
   }
 
-  const { term, meaning, ipa, example, lessonId } = fields;
+  const { term, meaning, ipa, example, definitionEn, lessonId } = fields;
   const safeLessonId = await resolveLessonId(userId, lessonId);
 
   await prisma.word.updateMany({
@@ -145,6 +150,7 @@ export async function updateWord(
       meaning,
       ipa,
       example,
+      definitionEn,
       lessonId: safeLessonId,
     },
   });
