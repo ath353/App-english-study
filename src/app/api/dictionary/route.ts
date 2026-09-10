@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { auth } from "@/lib/auth";
+
+// Thời gian chờ tối đa cho mỗi lần gọi API bên ngoài (ms). Quá hạn thì bỏ qua,
+// tránh để request của người dùng bị treo khi dịch vụ ngoài phản hồi chậm.
+const EXTERNAL_TIMEOUT = 6000;
+
 type DictionaryDefinition = {
   definition?: string;
   example?: string;
@@ -22,6 +28,7 @@ async function translateToVietnamese(text: string): Promise<string> {
   try {
     const res = await fetch(
       `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|vi`,
+      { signal: AbortSignal.timeout(EXTERNAL_TIMEOUT) },
     );
     if (!res.ok) return "";
 
@@ -38,15 +45,33 @@ async function translateToVietnamese(text: string): Promise<string> {
 }
 
 export async function GET(request: NextRequest) {
+  // Chỉ người đã đăng nhập mới được dùng — tránh bị lạm dụng làm proxy dịch miễn phí
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Chưa đăng nhập" }, { status: 401 });
+  }
+
   const word = request.nextUrl.searchParams.get("word")?.trim();
 
   if (!word) {
     return NextResponse.json({ error: "Thiếu từ cần tra" }, { status: 400 });
   }
+  if (word.length > 100) {
+    return NextResponse.json({ error: "Từ cần tra quá dài" }, { status: 400 });
+  }
 
-  const res = await fetch(
-    `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`,
-  );
+  let res: Response;
+  try {
+    res = await fetch(
+      `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`,
+      { signal: AbortSignal.timeout(EXTERNAL_TIMEOUT) },
+    );
+  } catch {
+    return NextResponse.json(
+      { error: "Từ điển phản hồi chậm, thử lại sau hoặc tự nhập." },
+      { status: 504 },
+    );
+  }
 
   if (!res.ok) {
     return NextResponse.json(
@@ -55,7 +80,15 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const data: DictionaryEntry[] = await res.json();
+  let data: DictionaryEntry[];
+  try {
+    data = await res.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Không đọc được dữ liệu từ điển, bạn có thể tự nhập." },
+      { status: 502 },
+    );
+  }
   const entry = data[0];
 
   const ipa =
