@@ -243,8 +243,8 @@ export async function reviewWord(id: string, remembered: boolean) {
       ]
     : "NEW";
 
-  await prisma.word.update({
-    where: { id },
+  await prisma.word.updateMany({
+    where: { id, userId },
     data: { status: newStatus, lastReviewedAt: new Date() },
   });
 
