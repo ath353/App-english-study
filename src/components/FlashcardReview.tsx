@@ -10,42 +10,50 @@ type Word = {
   meaning: string | null;
   ipa: string | null;
   example: string | null;
+  box: number;
 };
 
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 export function FlashcardReview({ words }: { words: Word[] }) {
+  // Chốt danh sách và xáo trộn một lần khi bắt đầu lượt ôn — không đổi theo prop
+  // nữa, để việc chấm điểm giữa chừng (làm danh sách đến hạn co lại ở server)
+  // không làm nhảy thứ tự thẻ đang ôn.
+  const [deck] = useState(() => shuffle(words));
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  if (words.length === 0) {
+  if (deck.length === 0) {
     return (
       <p className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
-        Chưa có từ nào để ôn tập. Thêm từ ở trang &quot;Từ vựng&quot; trước đã nhé.
+        Không có từ nào để ôn.
       </p>
     );
   }
 
-  if (index >= words.length) {
+  if (index >= deck.length) {
     return (
-      <div className="flex flex-col items-center gap-4 rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+      <div className="flex flex-col items-center gap-3 rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
         <span className="text-4xl">🎉</span>
         <p className="text-lg font-semibold text-slate-900">
-          Bạn đã ôn hết {words.length} từ trong lượt này!
+          Xong rồi! Bạn đã ôn hết {deck.length} từ đến hạn hôm nay.
         </p>
-        <button
-          onClick={() => {
-            setIndex(0);
-            setFlipped(false);
-          }}
-          className="rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
-        >
-          Ôn lại từ đầu
-        </button>
+        <p className="text-sm text-slate-500">
+          Các từ tiếp theo sẽ tự đến hạn theo lịch.
+        </p>
       </div>
     );
   }
 
-  const word = words[index];
+  const word = deck[index];
 
   function handleAnswer(remembered: boolean) {
     startTransition(async () => {
@@ -61,11 +69,11 @@ export function FlashcardReview({ words }: { words: Word[] }) {
         <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200">
           <div
             className="h-full rounded-full bg-indigo-600 transition-all"
-            style={{ width: `${(index / words.length) * 100}%` }}
+            style={{ width: `${(index / deck.length) * 100}%` }}
           />
         </div>
         <p className="shrink-0 text-sm font-medium text-slate-500">
-          {index + 1} / {words.length}
+          {index + 1} / {deck.length}
         </p>
       </div>
 
@@ -96,6 +104,7 @@ export function FlashcardReview({ words }: { words: Word[] }) {
             {word.example && (
               <p className="text-sm italic text-slate-500">{word.example}</p>
             )}
+            <p className="text-xs text-slate-400">Hộp {word.box}/5</p>
           </div>
         )}
       </button>
