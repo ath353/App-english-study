@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 
 import { reviewWord } from "@/lib/actions/words";
 
@@ -26,10 +26,16 @@ export function FlashcardReview({ words }: { words: Word[] }) {
   // Chốt danh sách và xáo trộn một lần khi bắt đầu lượt ôn — không đổi theo prop
   // nữa, để việc chấm điểm giữa chừng (làm danh sách đến hạn co lại ở server)
   // không làm nhảy thứ tự thẻ đang ôn.
-  const [deck] = useState(() => shuffle(words));
+  const [deck, setDeck] = useState(() => shuffle(words));
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [isPending, startTransition] = useTransition();
+  // Số từ đến hạn thật sự của lượt này (deck có thể dài hơn do "Chưa nhớ" đưa
+  // từ quay lại cuối hàng).
+  const [totalDue] = useState(words.length);
+  // Các từ đã được chấm điểm ghi vào database trong lượt này — chỉ đụng trong
+  // handler, không đọc lúc render.
+  const gradedIdsRef = useRef<Set<string>>(new Set());
 
   if (deck.length === 0) {
     return (
@@ -44,7 +50,7 @@ export function FlashcardReview({ words }: { words: Word[] }) {
       <div className="flex flex-col items-center gap-3 rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
         <span className="text-4xl">🎉</span>
         <p className="text-lg font-semibold text-slate-900">
-          Xong rồi! Bạn đã ôn hết {deck.length} từ đến hạn hôm nay.
+          Xong rồi! Bạn đã ôn hết {totalDue} từ đến hạn hôm nay.
         </p>
         <p className="text-sm text-slate-500">
           Các từ tiếp theo sẽ tự đến hạn theo lịch.
@@ -56,8 +62,18 @@ export function FlashcardReview({ words }: { words: Word[] }) {
   const word = deck[index];
 
   function handleAnswer(remembered: boolean) {
+    const current = word;
     startTransition(async () => {
-      await reviewWord(word.id, remembered);
+      // Chỉ ghi lịch một lần cho mỗi từ trong lượt này. Lần gặp lại (do "Chưa
+      // nhớ" đưa xuống cuối) chỉ để luyện thêm, không đổi lịch.
+      const graded = gradedIdsRef.current;
+      if (!graded.has(current.id)) {
+        await reviewWord(current.id, remembered);
+        graded.add(current.id);
+      }
+      if (!remembered) {
+        setDeck((d) => [...d, current]);
+      }
       setFlipped(false);
       setIndex((i) => i + 1);
     });
