@@ -90,15 +90,35 @@ export async function updateWord(id: string, formData: FormData) {
   revalidatePath("/words");
 }
 
+// Giới hạn số từ cho mỗi lần nhập hàng loạt — tránh dán nhầm hàng chục nghìn dòng
+// làm phình database hoặc quá thời gian xử lý. Cần nhiều hơn thì chia làm nhiều lần.
+const MAX_BULK_TERMS = 300;
+const MAX_TERM_LENGTH = 100;
+
 export async function bulkCreateWords(formData: FormData) {
   const userId = await requireUserId();
   const rawTerms = String(formData.get("terms") ?? "");
   const rawLessonId = String(formData.get("lessonId") ?? "").trim() || null;
 
-  const terms = rawTerms
+  const lines = rawTerms
     .split("\n")
     .map((line) => line.trim())
-    .filter((line) => line.length > 0);
+    .filter((line) => line.length > 0 && line.length <= MAX_TERM_LENGTH);
+
+  if (lines.length > MAX_BULK_TERMS) {
+    throw new Error(
+      `Mỗi lần chỉ nhập tối đa ${MAX_BULK_TERMS} từ. Bạn đang có ${lines.length} dòng — hãy chia nhỏ ra.`,
+    );
+  }
+
+  // Bỏ trùng lặp ngay trong danh sách vừa dán (không phân biệt hoa/thường)
+  const seen = new Set<string>();
+  const terms = lines.filter((line) => {
+    const key = line.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 
   const lessonId = await resolveLessonId(userId, rawLessonId);
 
