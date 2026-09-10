@@ -276,9 +276,11 @@ function EditWordForm({
 export function WordList({
   words,
   lessons,
+  listKey,
 }: {
   words: Word[];
   lessons: Lesson[];
+  listKey?: string;
 }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectionMode, setSelectionMode] = useState(false);
@@ -432,11 +434,14 @@ export function WordList({
       {toolbar}
 
       {view === "card" ? (
-        <ul className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ul
+          key={`card-${listKey}`}
+          className="grid animate-fade-in grid-cols-1 items-start gap-3 sm:grid-cols-2 lg:grid-cols-3"
+        >
           {words.map((word) => (
             <li
               key={word.id}
-              className={`group rounded-2xl border border-l-4 border-line bg-surface p-4 shadow-sm ${
+              className={`group rounded-2xl border border-l-4 border-line bg-surface p-4 shadow-sm transition hover-device:hover:-translate-y-0.5 hover-device:hover:shadow-md ${
                 STATUS_META[word.status].edge
               } ${editingId === word.id ? "col-span-full" : ""}`}
             >
@@ -504,7 +509,10 @@ export function WordList({
           ))}
         </ul>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-line">
+        <div
+          key={`table-${listKey}`}
+          className="animate-fade-in overflow-x-auto rounded-2xl border border-line"
+        >
           <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="border-b border-line bg-surface-2 text-left text-xs uppercase text-muted">

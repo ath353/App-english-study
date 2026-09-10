@@ -215,7 +215,11 @@ export default async function WordsPage({
         {query && ` (đang lọc theo "${query}")`}
       </p>
 
-      <WordList words={words} lessons={lessons} />
+      <WordList
+        words={words}
+        lessons={lessons}
+        listKey={`${query}|${lessonId ?? ""}|${activeStatus ?? ""}|${sort}|${take}`}
+      />
 
       {hasMore && (
         <Link

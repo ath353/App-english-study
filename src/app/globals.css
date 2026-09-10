@@ -52,3 +52,47 @@ body {
   color: var(--fg);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
+
+@layer base {
+  /* Mọi thứ tương tác đổi trạng thái có chuyển tiếp thay vì nhảy phựt */
+  a,
+  button,
+  select,
+  input,
+  textarea,
+  summary {
+    transition-property: color, background-color, border-color, box-shadow,
+      transform, opacity;
+    transition-duration: 150ms;
+    transition-timing-function: ease;
+  }
+  /* Nút hơi lún xuống khi bấm */
+  button:not(:disabled):active {
+    transform: scale(0.97);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@utility animate-fade-in {
+  animation: fade-in 0.2s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
