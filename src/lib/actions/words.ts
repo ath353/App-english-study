@@ -79,6 +79,24 @@ function validateWordFields(
   return null;
 }
 
+// Kiểm tra user đã có từ này chưa (không phân biệt hoa/thường). excludeId để bỏ
+// qua chính từ đang được sửa.
+async function isDuplicateTerm(
+  userId: string,
+  term: string,
+  excludeId?: string,
+) {
+  const found = await prisma.word.findFirst({
+    where: {
+      userId,
+      term: { equals: term, mode: "insensitive" },
+      ...(excludeId ? { id: { not: excludeId } } : {}),
+    },
+    select: { id: true },
+  });
+  return found !== null;
+}
+
 export async function createWord(
   formData: FormData,
 ): Promise<WordActionResult> {
@@ -87,6 +105,10 @@ export async function createWord(
 
   const error = validateWordFields(fields);
   if (error) return { error };
+
+  if (await isDuplicateTerm(userId, fields.term)) {
+    return { error: `Từ "${fields.term}" đã có trong danh sách rồi.` };
+  }
 
   const { term, meaning, ipa, example, exampleTranslation, lessonId } = fields;
   const safeLessonId = await resolveLessonId(userId, lessonId);
@@ -115,6 +137,10 @@ export async function updateWord(
 
   const error = validateWordFields(fields);
   if (error) return { error };
+
+  if (await isDuplicateTerm(userId, fields.term, id)) {
+    return { error: `Đã có từ "${fields.term}" khác trong danh sách.` };
+  }
 
   const { term, meaning, ipa, example, exampleTranslation, lessonId } = fields;
   const safeLessonId = await resolveLessonId(userId, lessonId);
@@ -157,12 +183,22 @@ export async function bulkCreateWords(formData: FormData) {
 
   // Bỏ trùng lặp ngay trong danh sách vừa dán (không phân biệt hoa/thường)
   const seen = new Set<string>();
-  const terms = lines.filter((line) => {
+  const uniqueLines = lines.filter((line) => {
     const key = line.toLowerCase();
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
+
+  // Bỏ tiếp những từ user đã có sẵn trong danh sách
+  const existing = await prisma.word.findMany({
+    where: { userId },
+    select: { term: true },
+  });
+  const existingKeys = new Set(existing.map((w) => w.term.toLowerCase()));
+  const terms = uniqueLines.filter(
+    (line) => !existingKeys.has(line.toLowerCase()),
+  );
 
   const lessonId = await resolveLessonId(userId, rawLessonId);
 
