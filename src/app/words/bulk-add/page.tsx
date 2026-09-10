@@ -27,7 +27,7 @@ export default async function BulkAddWordsPage({
   return (
     <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900">
+        <h1 className="text-2xl font-bold text-fg">
           Nhập hàng loạt từ vựng
         </h1>
         <Link href="/words" className="text-sm text-indigo-600 hover:underline">
@@ -35,7 +35,7 @@ export default async function BulkAddWordsPage({
         </Link>
       </div>
 
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-muted">
         Dán danh sách từ, mỗi dòng 1 từ. Các từ sẽ được lưu ngay lập tức
         (chưa có nghĩa/IPA/ví dụ). Sau đó ở trang Từ vựng bấm nút{" "}
         <span className="font-medium">&quot;✨ Điền tự động ... từ chưa có nghĩa&quot;</span>{" "}
@@ -44,10 +44,10 @@ export default async function BulkAddWordsPage({
 
       <form
         action={bulkCreateWords}
-        className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+        className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-5 shadow-sm"
       >
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-slate-700" htmlFor="terms">
+          <label className="text-sm font-medium text-fg-soft" htmlFor="terms">
             Danh sách từ (mỗi dòng 1 từ)
           </label>
           <textarea
@@ -56,19 +56,19 @@ export default async function BulkAddWordsPage({
             required
             rows={12}
             placeholder={"apple\nbanana\ncomputer\n..."}
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-mono focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="rounded-lg border border-line px-3 py-2 text-sm font-mono focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-slate-700" htmlFor="lessonId">
+          <label className="text-sm font-medium text-fg-soft" htmlFor="lessonId">
             Thuộc Bài
           </label>
           <select
             id="lessonId"
             name="lessonId"
             defaultValue={defaultLessonId ?? ""}
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="rounded-lg border border-line px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           >
             <option value="">-- Không chọn --</option>
             {lessons.map((lesson) => (

@@ -32,12 +32,12 @@ export function SortSelect({
   }
 
   return (
-    <label className="flex items-center gap-1.5 text-sm text-slate-500">
+    <label className="flex items-center gap-1.5 text-sm text-muted">
       Sắp xếp
       <select
         value={value}
         onChange={handleChange}
-        className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        className="rounded-lg border border-line bg-surface px-2 py-1 text-sm text-fg-soft focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
       >
         {OPTIONS.map((o) => (
           <option key={o.value} value={o.value}>

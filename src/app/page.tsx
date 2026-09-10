@@ -12,8 +12,8 @@ export default async function Home() {
         <div className="flex flex-col items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/icons/icon-192.png" alt="Logo" className="h-16 w-16 rounded-full" />
-          <h1 className="text-3xl font-bold text-slate-900">Học từ vựng Tiếng Anh</h1>
-          <p className="max-w-xs text-sm text-slate-500">
+          <h1 className="text-3xl font-bold text-fg">Học từ vựng Tiếng Anh</h1>
+          <p className="max-w-xs text-sm text-muted">
             Thêm từ vựng tự do, ôn tập bằng flashcard — học mọi lúc mọi nơi.
           </p>
         </div>
@@ -44,19 +44,19 @@ export default async function Home() {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 p-6">
       <div>
-        <p className="text-sm text-slate-500">Xin chào,</p>
-        <h1 className="text-2xl font-bold text-slate-900">
+        <p className="text-sm text-muted">Xin chào,</p>
+        <h1 className="text-2xl font-bold text-fg">
           {session.user.name}
         </h1>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-sm text-slate-500">Tổng số từ vựng</p>
+        <div className="rounded-2xl border border-line bg-surface p-6 shadow-sm">
+          <p className="text-sm text-muted">Tổng số từ vựng</p>
           <p className="text-4xl font-bold text-indigo-600">{wordCount}</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-sm text-slate-500">Cần ôn hôm nay</p>
+        <div className="rounded-2xl border border-line bg-surface p-6 shadow-sm">
+          <p className="text-sm text-muted">Cần ôn hôm nay</p>
           <p className="text-4xl font-bold text-indigo-600">{dueCount}</p>
         </div>
       </div>
@@ -64,23 +64,23 @@ export default async function Home() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Link
           href="/words"
-          className="flex flex-col gap-1 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-indigo-300 hover:shadow-md"
+          className="flex flex-col gap-1 rounded-2xl border border-line bg-surface p-5 shadow-sm transition hover:border-indigo-300 hover:shadow-md"
         >
           <span className="text-2xl">➕</span>
-          <span className="font-semibold text-slate-900">
+          <span className="font-semibold text-fg">
             Quản lý từ vựng
           </span>
-          <span className="text-sm text-slate-500">
+          <span className="text-sm text-muted">
             Thêm, sửa, xoá từ của bạn
           </span>
         </Link>
         <Link
           href="/review"
-          className="flex flex-col gap-1 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-indigo-300 hover:shadow-md"
+          className="flex flex-col gap-1 rounded-2xl border border-line bg-surface p-5 shadow-sm transition hover:border-indigo-300 hover:shadow-md"
         >
           <span className="text-2xl">🔁</span>
-          <span className="font-semibold text-slate-900">Ôn tập</span>
-          <span className="text-sm text-slate-500">
+          <span className="font-semibold text-fg">Ôn tập</span>
+          <span className="text-sm text-muted">
             {dueCount > 0
               ? `${dueCount} từ đang chờ bạn ôn`
               : "Lật thẻ, tự đánh giá mức nhớ"}

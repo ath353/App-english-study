@@ -41,7 +41,7 @@ export function FlashcardReview({ words }: { words: Word[] }) {
 
   if (deck.length === 0) {
     return (
-      <p className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
+      <p className="rounded-2xl border border-dashed border-line p-6 text-center text-sm text-muted">
         Không có từ nào để ôn.
       </p>
     );
@@ -49,12 +49,12 @@ export function FlashcardReview({ words }: { words: Word[] }) {
 
   if (index >= deck.length) {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+      <div className="flex flex-col items-center gap-3 rounded-2xl border border-line bg-surface p-10 text-center shadow-sm">
         <span className="text-4xl">🎉</span>
-        <p className="text-lg font-semibold text-slate-900">
+        <p className="text-lg font-semibold text-fg">
           Xong rồi! Bạn đã ôn hết {totalDue} từ đến hạn hôm nay.
         </p>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-muted">
           Các từ tiếp theo sẽ tự đến hạn theo lịch.
         </p>
       </div>
@@ -84,13 +84,13 @@ export function FlashcardReview({ words }: { words: Word[] }) {
   return (
     <div className="flex flex-col items-center gap-5">
       <div className="flex w-full max-w-md items-center gap-3">
-        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200">
+        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2">
           <div
             className="h-full rounded-full bg-indigo-600 transition-all"
             style={{ width: `${(index / deck.length) * 100}%` }}
           />
         </div>
-        <p className="shrink-0 text-sm font-medium text-slate-500">
+        <p className="shrink-0 text-sm font-medium text-muted">
           {index + 1} / {deck.length}
         </p>
       </div>
@@ -98,34 +98,34 @@ export function FlashcardReview({ words }: { words: Word[] }) {
       <button
         type="button"
         onClick={() => setFlipped((f) => !f)}
-        className="flex min-h-[240px] w-full max-w-md flex-col items-center justify-center gap-3 rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm transition hover:shadow-md"
+        className="flex min-h-[240px] w-full max-w-md flex-col items-center justify-center gap-3 rounded-3xl border border-line bg-surface p-8 text-center shadow-sm transition hover:shadow-md"
       >
         {!flipped ? (
-          <p className="text-4xl font-bold text-slate-900">{word.term}</p>
+          <p className="text-4xl font-bold text-fg">{word.term}</p>
         ) : (
           <div className="flex flex-col gap-2">
-            <p className="text-3xl font-bold text-slate-900">
+            <p className="text-3xl font-bold text-fg">
               {word.term}
               {word.ipa && (
-                <span className="ml-2 text-lg font-normal text-slate-400">
+                <span className="ml-2 text-lg font-normal text-faint">
                   /{word.ipa}/
                 </span>
               )}
             </p>
             {word.meaning ? (
-              <p className="text-xl text-slate-700">{word.meaning}</p>
+              <p className="text-xl text-fg-soft">{word.meaning}</p>
             ) : (
               <p className="text-sm italic text-amber-600">
                 Chưa có nghĩa — vào trang Từ vựng để bổ sung
               </p>
             )}
             {word.example && (
-              <p className="text-sm italic text-slate-500">{word.example}</p>
+              <p className="text-sm italic text-muted">{word.example}</p>
             )}
             {word.definitionEn && (
-              <p className="text-xs text-slate-400">📖 {word.definitionEn}</p>
+              <p className="text-xs text-faint">📖 {word.definitionEn}</p>
             )}
-            <p className="text-xs text-slate-400">Hộp {word.box}/5</p>
+            <p className="text-xs text-faint">Hộp {word.box}/5</p>
           </div>
         )}
       </button>
@@ -133,13 +133,13 @@ export function FlashcardReview({ words }: { words: Word[] }) {
       <SpeakButton
         text={word.term}
         label="Nghe phát âm"
-        className="flex items-center gap-1 rounded-full bg-slate-100 px-4 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-200"
+        className="flex items-center gap-1 rounded-full bg-surface-2 px-4 py-1.5 text-sm font-medium text-fg-soft hover:bg-surface-2-hover"
       />
 
       {!flipped ? (
         <button
           onClick={() => setFlipped(true)}
-          className="rounded-full bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-700"
+          className="rounded-full bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
         >
           Lật thẻ
         </button>
@@ -148,14 +148,14 @@ export function FlashcardReview({ words }: { words: Word[] }) {
           <button
             disabled={isPending}
             onClick={() => handleAnswer(false)}
-            className="rounded-full bg-red-50 px-6 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-100 disabled:opacity-50"
+            className="rounded-full bg-red-500/10 px-6 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-500/20 disabled:opacity-50"
           >
             😵 Chưa nhớ
           </button>
           <button
             disabled={isPending}
             onClick={() => handleAnswer(true)}
-            className="rounded-full bg-emerald-50 px-6 py-2.5 text-sm font-semibold text-emerald-700 hover:bg-emerald-100 disabled:opacity-50"
+            className="rounded-full bg-emerald-500/10 px-6 py-2.5 text-sm font-semibold text-emerald-600 hover:bg-emerald-500/20 disabled:opacity-50"
           >
             ✅ Nhớ rồi
           </button>

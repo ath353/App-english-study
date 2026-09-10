@@ -52,7 +52,7 @@ export function AutoFillMissingButton({
 
   if (result) {
     return (
-      <p className="text-sm text-slate-600">
+      <p className="text-sm text-fg-soft">
         Đã điền nghĩa cho {result.filled}/{result.processed} từ.
         {result.filled < result.processed &&
           " Số còn lại từ điển không tra được — bạn tự điền, hoặc thử lại sau (có thể đã hết lượt dịch miễn phí hôm nay)."}
@@ -73,7 +73,7 @@ export function AutoFillMissingButton({
           : `✨ Điền tự động ${count} từ chưa có nghĩa`}
       </button>
       {running && (
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-faint">
           Đừng rời trang khi đang chạy. Có thể mất vài phút nếu nhiều từ.
         </p>
       )}

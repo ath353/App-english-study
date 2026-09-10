@@ -33,7 +33,7 @@ export function SpeakButton({
       title="Nghe phát âm"
       className={
         className ??
-        "shrink-0 rounded-full px-1.5 text-slate-400 hover:text-indigo-600"
+        "shrink-0 rounded-full px-1.5 text-faint hover:text-indigo-600"
       }
     >
       🔊{label ? ` ${label}` : ""}

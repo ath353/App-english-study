@@ -15,7 +15,7 @@ type Lesson = {
 };
 
 const pillInputClass =
-  "w-32 rounded border border-slate-300 px-2 py-0.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
+  "w-32 rounded border border-line px-2 py-0.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
 
 export function LessonManager({ lessons }: { lessons: Lesson[] }) {
   const [isPending, startTransition] = useTransition();
@@ -37,8 +37,8 @@ export function LessonManager({ lessons }: { lessons: Lesson[] }) {
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="font-semibold text-slate-900">Quản lý Bài học</h2>
+    <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-5 shadow-sm">
+      <h2 className="font-semibold text-fg">Quản lý Bài học</h2>
 
       <form
         action={(formData) => {
@@ -50,7 +50,7 @@ export function LessonManager({ lessons }: { lessons: Lesson[] }) {
           name="name"
           placeholder="Tên bài mới (vd: Bài 1)"
           required
-          className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="flex-1 rounded-lg border border-line px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         />
         <button
           type="submit"
@@ -66,7 +66,7 @@ export function LessonManager({ lessons }: { lessons: Lesson[] }) {
           {lessons.map((lesson) => (
             <li
               key={lesson.id}
-              className="flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 text-sm text-slate-700"
+              className="flex items-center gap-2 rounded-full bg-surface-2 px-3 py-1.5 text-sm text-fg-soft"
             >
               {editingId === lesson.id ? (
                 <form
@@ -93,7 +93,7 @@ export function LessonManager({ lessons }: { lessons: Lesson[] }) {
                   <button
                     type="button"
                     onClick={() => setEditingId(null)}
-                    className="text-slate-400 hover:text-slate-600"
+                    className="text-faint hover:text-fg-soft"
                     aria-label="Huỷ"
                   >
                     ×
@@ -103,13 +103,13 @@ export function LessonManager({ lessons }: { lessons: Lesson[] }) {
                 <>
                   <span>
                     {lesson.name}{" "}
-                    <span className="text-slate-400">
+                    <span className="text-faint">
                       ({lesson._count.words})
                     </span>
                   </span>
                   <button
                     onClick={() => startEdit(lesson)}
-                    className="text-slate-400 hover:text-indigo-600"
+                    className="text-faint hover:text-indigo-600"
                     aria-label={`Sửa tên ${lesson.name}`}
                   >
                     ✏️
@@ -124,7 +124,7 @@ export function LessonManager({ lessons }: { lessons: Lesson[] }) {
                         startTransition(() => deleteLesson(lesson.id));
                       }
                     }}
-                    className="text-slate-400 hover:text-red-600"
+                    className="text-faint hover:text-red-600"
                     aria-label={`Xoá ${lesson.name}`}
                   >
                     ×

@@ -26,13 +26,19 @@ type Lesson = { id: string; name: string };
 
 const STATUS_META: Record<Word["status"], { label: string; className: string }> =
   {
-    NEW: { label: "Mới", className: "bg-slate-100 text-slate-500" },
-    LEARNING: { label: "Đang học", className: "bg-amber-100 text-amber-700" },
-    KNOWN: { label: "Đã thuộc", className: "bg-emerald-100 text-emerald-700" },
+    NEW: { label: "Mới", className: "bg-surface-2 text-muted" },
+    LEARNING: {
+      label: "Đang học",
+      className: "bg-amber-500/15 text-amber-600",
+    },
+    KNOWN: {
+      label: "Đã thuộc",
+      className: "bg-emerald-500/15 text-emerald-600",
+    },
   };
 
 const inputClass =
-  "rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
+  "rounded-lg border border-line px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
 
 function EditWordForm({
   word,
@@ -112,14 +118,14 @@ function EditWordForm({
         {fields.term.trim() && (
           <SpeakButton
             text={fields.term}
-            className="shrink-0 rounded-lg bg-slate-100 px-3 text-slate-600 hover:bg-slate-200"
+            className="shrink-0 rounded-lg bg-surface-2 px-3 text-fg-soft hover:bg-surface-2-hover"
           />
         )}
         <button
           type="button"
           onClick={handleAutoFill}
           disabled={isLookingUp || !fields.term.trim()}
-          className="shrink-0 rounded-lg bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
+          className="shrink-0 rounded-lg bg-indigo-500/10 px-3 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-500/20 disabled:opacity-50"
         >
           {isLookingUp ? "Đang tra..." : "✨ Tự động điền"}
         </button>
@@ -186,7 +192,7 @@ function EditWordForm({
         <button
           type="button"
           onClick={onDone}
-          className="rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-200"
+          className="rounded-lg bg-surface-2 px-3 py-1.5 text-sm font-medium text-fg-soft hover:bg-surface-2-hover"
         >
           Huỷ
         </button>
@@ -264,7 +270,7 @@ export function WordList({
 
   if (words.length === 0) {
     return (
-      <p className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
+      <p className="rounded-2xl border border-dashed border-line p-6 text-center text-sm text-muted">
         Chưa có từ vựng nào. Thêm từ đầu tiên ở form bên trên.
       </p>
     );
@@ -273,12 +279,12 @@ export function WordList({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2 text-sm">
-        <label className="flex items-center gap-2 text-slate-600">
+        <label className="flex items-center gap-2 text-fg-soft">
           <input
             type="checkbox"
             checked={activeSelected.length === words.length}
             onChange={toggleSelectAll}
-            className="h-4 w-4 rounded border-slate-300"
+            className="h-4 w-4 rounded border-line"
           />
           Chọn tất cả ({words.length})
         </label>
@@ -291,7 +297,7 @@ export function WordList({
                 disabled={isPending}
                 defaultValue=""
                 aria-label="Chuyển từ đã chọn sang Bài khác"
-                className="rounded-full border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 disabled:opacity-50"
+                className="rounded-full border border-line bg-surface px-3 py-1.5 text-sm font-medium text-fg-soft disabled:opacity-50"
               >
                 <option value="" disabled>
                   Chuyển sang Bài…
@@ -319,7 +325,7 @@ export function WordList({
         {words.map((word) => (
         <li
           key={word.id}
-          className={`rounded-2xl border border-slate-200 bg-white p-5 shadow-sm ${
+          className={`rounded-2xl border border-line bg-surface p-5 shadow-sm ${
             editingId === word.id ? "col-span-full" : ""
           }`}
         >
@@ -337,16 +343,16 @@ export function WordList({
                     type="checkbox"
                     checked={selectedIds.has(word.id)}
                     onChange={() => toggleSelected(word.id)}
-                    className="mt-1.5 h-4 w-4 shrink-0 rounded border-slate-300"
+                    className="mt-1.5 h-4 w-4 shrink-0 rounded border-line"
                     aria-label={`Chọn từ ${word.term}`}
                   />
                   <div>
-                    <p className="flex items-center gap-1 text-lg font-semibold text-slate-900">
+                    <p className="flex items-center gap-1 text-lg font-semibold text-fg">
                       {word.term}
                       <SpeakButton text={word.term} />
                     </p>
                     {word.ipa && (
-                      <p className="text-sm text-slate-400">/{word.ipa}/</p>
+                      <p className="text-sm text-faint">/{word.ipa}/</p>
                     )}
                     <div className="mt-1 flex flex-wrap gap-1">
                       <span
@@ -355,7 +361,7 @@ export function WordList({
                         {STATUS_META[word.status].label}
                       </span>
                       {word.lesson && (
-                        <span className="inline-block rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600">
+                        <span className="inline-block rounded-full bg-indigo-500/10 px-2 py-0.5 text-xs font-medium text-indigo-600">
                           {word.lesson.name}
                         </span>
                       )}
@@ -385,17 +391,17 @@ export function WordList({
                 </div>
               </div>
               {word.meaning ? (
-                <p className="text-slate-700">{word.meaning}</p>
+                <p className="text-fg-soft">{word.meaning}</p>
               ) : (
                 <p className="text-sm italic text-amber-600">
                   Chưa có nghĩa — bấm Sửa để tự động điền
                 </p>
               )}
               {word.definitionEn && (
-                <p className="text-xs text-slate-500">📖 {word.definitionEn}</p>
+                <p className="text-xs text-muted">📖 {word.definitionEn}</p>
               )}
               {word.example && (
-                <p className="text-sm italic text-slate-500">{word.example}</p>
+                <p className="text-sm italic text-muted">{word.example}</p>
               )}
             </div>
           )}

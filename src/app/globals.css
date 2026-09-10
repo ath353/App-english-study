@@ -1,19 +1,50 @@
 @import "tailwindcss";
 
+/* Bảng màu theo "vai trò" (semantic) — dùng chung cho cả sáng lẫn tối.
+   Component chỉ nên dùng các lớp bg-surface / text-fg / border-line ... thay vì
+   gọi thẳng slate-xxx, để đổi theme là đổi ở một chỗ. */
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --bg: #f8fafc; /* nền trang */
+  --surface: #ffffff; /* nền thẻ / ô nhập */
+  --surface-2: #f1f5f9; /* nền phụ (nút xám, pill) */
+  --surface-2-hover: #e2e8f0;
+  --line: #e2e8f0; /* viền */
+  --fg: #0f172a; /* chữ chính */
+  --fg-soft: #334155; /* chữ nội dung phụ */
+  --muted: #64748b; /* chữ mờ (nhãn, chú thích) */
+  --faint: #94a3b8; /* chữ rất mờ (IPA, ghi chú nhỏ) */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b1120;
+    --surface: #131c2e;
+    --surface-2: #1e293b;
+    --surface-2-hover: #334155;
+    --line: #263449;
+    --fg: #f1f5f9;
+    --fg-soft: #cbd5e1;
+    --muted: #94a3b8;
+    --faint: #64748b;
+  }
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-2-hover: var(--surface-2-hover);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-fg-soft: var(--fg-soft);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--bg);
+  color: var(--fg);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }

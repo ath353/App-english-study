@@ -32,7 +32,7 @@ export function LessonTabs({
     return `rounded-full px-3 py-1.5 text-sm font-medium ${
       active
         ? "bg-indigo-600 text-white"
-        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+        : "bg-surface-2 text-fg-soft hover:bg-surface-2-hover"
     }`;
   }
 

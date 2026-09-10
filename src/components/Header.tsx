@@ -7,11 +7,11 @@ export async function Header() {
   if (!session?.user) return null;
 
   return (
-    <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur">
+    <header className="sticky top-0 z-10 border-b border-line bg-surface/80 backdrop-blur">
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-2 px-3 py-2 sm:px-6 sm:py-3">
         <Link
           href="/"
-          className="flex shrink-0 items-center gap-2 text-lg font-bold text-slate-900"
+          className="flex shrink-0 items-center gap-2 text-lg font-bold text-fg"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -41,7 +41,7 @@ export async function Header() {
             <img
               src={session.user.image}
               alt={session.user.name ?? "avatar"}
-              className="hidden h-8 w-8 rounded-full ring-1 ring-slate-200 sm:block"
+              className="hidden h-8 w-8 rounded-full ring-1 ring-line sm:block"
             />
           )}
 

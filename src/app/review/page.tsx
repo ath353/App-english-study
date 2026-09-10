@@ -62,7 +62,7 @@ export default async function ReviewPage({
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 p-6">
-      <h1 className="text-2xl font-bold text-slate-900">Ôn tập từ vựng</h1>
+      <h1 className="text-2xl font-bold text-fg">Ôn tập từ vựng</h1>
 
       <LessonTabs
         lessons={lessons}
@@ -73,17 +73,17 @@ export default async function ReviewPage({
       />
 
       {totalInScope > 0 && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-sm text-slate-500">Cần ôn hôm nay</p>
+        <div className="rounded-2xl border border-line bg-surface p-4 shadow-sm">
+          <p className="text-sm text-muted">Cần ôn hôm nay</p>
           <p className="text-3xl font-bold text-indigo-600">{dueWords.length}</p>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-faint">
             Tổng: {newCount} mới · {learningCount} đang học · {knownCount} đã thuộc
           </p>
         </div>
       )}
 
       {totalInScope === 0 ? (
-        <p className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
+        <p className="rounded-2xl border border-dashed border-line p-6 text-center text-sm text-muted">
           Chưa có từ nào để ôn tập.{" "}
           <Link href="/words" className="text-indigo-600 hover:underline">
             Thêm từ ở trang Từ vựng
@@ -91,12 +91,12 @@ export default async function ReviewPage({
           trước đã nhé.
         </p>
       ) : dueWords.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-line bg-surface p-10 text-center shadow-sm">
           <span className="text-4xl">🎉</span>
-          <p className="text-lg font-semibold text-slate-900">
+          <p className="text-lg font-semibold text-fg">
             Hôm nay không có từ nào đến hạn ôn!
           </p>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-muted">
             Quay lại sau nhé — các từ sẽ tự đến hạn theo lịch.
           </p>
         </div>

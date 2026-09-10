@@ -26,7 +26,7 @@ export default async function AddWordPage({
   return (
     <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900">Thêm từ mới</h1>
+        <h1 className="text-2xl font-bold text-fg">Thêm từ mới</h1>
         <Link href="/words" className="text-sm text-indigo-600 hover:underline">
           ← Về danh sách
         </Link>

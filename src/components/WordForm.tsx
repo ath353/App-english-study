@@ -8,9 +8,9 @@ import { SpeakButton } from "@/components/SpeakButton";
 type Lesson = { id: string; name: string };
 
 const inputClass =
-  "rounded-lg border border-slate-300 px-3 py-2 text-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
+  "rounded-lg border border-line px-3 py-2 text-sm placeholder:text-faint focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
 
-const labelClass = "text-sm font-medium text-slate-700";
+const labelClass = "text-sm font-medium text-fg-soft";
 
 export function WordForm({
   lessons,
@@ -79,9 +79,9 @@ export function WordForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+      className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-5 shadow-sm"
     >
-      <h2 className="font-semibold text-slate-900">Thêm từ mới</h2>
+      <h2 className="font-semibold text-fg">Thêm từ mới</h2>
 
       <div className="flex flex-col gap-1">
         <label className={labelClass} htmlFor="term">
@@ -100,14 +100,14 @@ export function WordForm({
           {fields.term.trim() && (
             <SpeakButton
               text={fields.term}
-              className="shrink-0 rounded-lg bg-slate-100 px-3 text-slate-600 hover:bg-slate-200"
+              className="shrink-0 rounded-lg bg-surface-2 px-3 text-fg-soft hover:bg-surface-2-hover"
             />
           )}
           <button
             type="button"
             onClick={handleAutoFill}
             disabled={isLookingUp || !fields.term.trim()}
-            className="shrink-0 rounded-lg bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
+            className="shrink-0 rounded-lg bg-indigo-500/10 px-3 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-500/20 disabled:opacity-50"
           >
             {isLookingUp ? "Đang tra..." : "✨ Tự động điền"}
           </button>

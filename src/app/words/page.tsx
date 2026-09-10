@@ -138,11 +138,11 @@ export default async function WordsPage({
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold text-slate-900">Từ vựng của tôi</h1>
+        <h1 className="text-2xl font-bold text-fg">Từ vựng của tôi</h1>
         <div className="flex gap-2">
           <Link
             href={`/words/bulk-add${autoFillLessonId ? `?lesson=${autoFillLessonId}` : ""}`}
-            className="flex-1 whitespace-nowrap rounded-full bg-slate-100 px-4 py-2 text-center text-sm font-semibold text-slate-700 hover:bg-slate-200 sm:flex-none"
+            className="flex-1 whitespace-nowrap rounded-full bg-surface-2 px-4 py-2 text-center text-sm font-semibold text-fg-soft hover:bg-surface-2-hover sm:flex-none"
           >
             Nhập hàng loạt
           </Link>
@@ -193,7 +193,7 @@ export default async function WordsPage({
               className={`rounded-full px-3 py-1.5 text-sm font-medium ${
                 active
                   ? "bg-indigo-600 text-white"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  : "bg-surface-2 text-fg-soft hover:bg-surface-2-hover"
               }`}
             >
               {s.label}
@@ -210,7 +210,7 @@ export default async function WordsPage({
         </div>
       </div>
 
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-muted">
         Hiện {words.length} / {totalCount} từ
         {query && ` (đang lọc theo "${query}")`}
       </p>
@@ -221,7 +221,7 @@ export default async function WordsPage({
         <Link
           href={hrefWith({ limit: String(take + PAGE_SIZE) })}
           scroll={false}
-          className="self-center rounded-full bg-slate-100 px-5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200"
+          className="self-center rounded-full bg-surface-2 px-5 py-2 text-sm font-medium text-fg-soft hover:bg-surface-2-hover"
         >
           Xem thêm
         </Link>
