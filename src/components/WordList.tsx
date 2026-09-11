@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, useSyncExternalStore, useTransition } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  useTransition,
+} from "react";
 
 import {
   deleteWord,
@@ -288,6 +294,16 @@ export function WordList({
   const [isPending, startTransition] = useTransition();
   const [view, setView] = useSavedView();
 
+  // Card/hàng đang mở form Sửa có thể phình to hơn hẳn (thêm nhiều ô nhập) và ở
+  // dạng thẻ còn bị đẩy xuống hàng mới do "chiếm trọn hàng ngang" — tự cuộn tới
+  // đó để người dùng không phải tự tìm/kéo xuống.
+  const editingRef = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    if (editingId && editingRef.current) {
+      editingRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [editingId]);
+
   // Chỉ tính những ID đang thực sự hiện trong danh sách hiện tại — tránh xoá nhầm
   // từ không còn hiển thị sau khi đổi bộ lọc.
   const activeSelected = words.filter((w) => selectedIds.has(w.id));
@@ -441,6 +457,7 @@ export function WordList({
           {words.map((word) => (
             <li
               key={word.id}
+              ref={editingId === word.id ? (el) => { editingRef.current = el; } : undefined}
               className={`group rounded-2xl border border-l-4 border-line bg-surface p-4 shadow-sm transition hover-device:hover:-translate-y-0.5 hover-device:hover:shadow-md ${
                 STATUS_META[word.status].edge
               } ${editingId === word.id ? "col-span-full" : ""}`}
@@ -534,7 +551,13 @@ export function WordList({
                 const cols = selectionMode ? 6 : 5;
                 if (editingId === word.id) {
                   return (
-                    <tr key={word.id} className="border-b border-line">
+                    <tr
+                      key={word.id}
+                      ref={(el) => {
+                        editingRef.current = el;
+                      }}
+                      className="border-b border-line"
+                    >
                       <td colSpan={cols} className="bg-surface p-3">
                         <EditWordForm
                           word={word}
