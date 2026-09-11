@@ -454,37 +454,42 @@ export function WordList({
               ) : (
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex min-w-0 items-baseline gap-1.5">
+                    <div className="flex min-w-0 items-center gap-1.5">
                       {selectionMode && (
                         <input
                           type="checkbox"
                           checked={selectedIds.has(word.id)}
                           onChange={() => toggleSelected(word.id)}
-                          className="mr-1 h-4 w-4 self-center rounded border-line"
+                          className="h-4 w-4 shrink-0 rounded border-line"
                           aria-label={`Chọn từ ${word.term}`}
                         />
                       )}
-                      <span className="text-lg font-semibold text-fg">
+                      <span className="truncate text-lg font-semibold text-fg">
                         {word.term}
                       </span>
-                      {word.ipa && (
-                        <span className="text-sm text-faint">/{word.ipa}/</span>
-                      )}
+                    </div>
+                    <RowActions
+                      onEdit={() => setEditingId(word.id)}
+                      onDelete={() => deleteOne(word)}
+                      disabled={isPending}
+                      revealOnHover
+                    />
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    {word.ipa ? (
+                      <span className="flex items-center gap-1 whitespace-nowrap text-sm text-faint">
+                        /{word.ipa}/
+                        <SpeakButton text={word.term} />
+                      </span>
+                    ) : (
                       <SpeakButton text={word.term} />
-                    </div>
-                    <div className="flex shrink-0 items-center gap-2">
-                      {word.lesson && (
-                        <span className="hidden rounded-full bg-indigo-500/10 px-2 py-0.5 text-xs font-medium text-indigo-600 sm:inline">
-                          {word.lesson.name}
-                        </span>
-                      )}
-                      <RowActions
-                        onEdit={() => setEditingId(word.id)}
-                        onDelete={() => deleteOne(word)}
-                        disabled={isPending}
-                        revealOnHover
-                      />
-                    </div>
+                    )}
+                    {word.lesson && (
+                      <span className="rounded-full bg-indigo-500/10 px-2 py-0.5 text-xs font-medium text-indigo-600">
+                        {word.lesson.name}
+                      </span>
+                    )}
                   </div>
 
                   {word.meaning ? (
