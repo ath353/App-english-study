@@ -68,11 +68,13 @@ export default async function BulkAddWordsPage({
             id="lessonId"
             name="lessonId"
             defaultValue={defaultLessonId ?? ""}
-            className="rounded-lg border border-line px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="rounded-lg border border-line bg-surface text-fg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           >
-            <option value="">-- Không chọn --</option>
+            <option value="" className="bg-surface text-fg">
+              -- Không chọn --
+            </option>
             {lessons.map((lesson) => (
-              <option key={lesson.id} value={lesson.id}>
+              <option key={lesson.id} value={lesson.id} className="bg-surface text-fg">
                 {lesson.name}
               </option>
             ))}

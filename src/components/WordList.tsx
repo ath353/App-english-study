@@ -52,7 +52,7 @@ const STATUS_META: Record<
 };
 
 const inputClass =
-  "rounded-lg border border-line px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
+  "rounded-lg border border-line bg-surface text-fg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
 
 // Ghi nhớ kiểu hiển thị (thẻ / bảng) riêng cho trình duyệt này.
 const VIEW_KEY = "words-view";
@@ -249,9 +249,11 @@ function EditWordForm({
         onChange={(e) => setFields((f) => ({ ...f, lessonId: e.target.value }))}
         className={inputClass}
       >
-        <option value="">-- Không chọn --</option>
+        <option value="" className="bg-surface text-fg">
+          -- Không chọn --
+        </option>
         {lessons.map((lesson) => (
-          <option key={lesson.id} value={lesson.id}>
+          <option key={lesson.id} value={lesson.id} className="bg-surface text-fg">
             {lesson.name}
           </option>
         ))}
@@ -391,12 +393,14 @@ export function WordList({
               aria-label="Chuyển từ đã chọn sang Bài khác"
               className="rounded-full border border-line bg-surface px-3 py-1.5 font-medium text-fg-soft disabled:opacity-50"
             >
-              <option value="" disabled>
+              <option value="" disabled className="bg-surface text-fg">
                 Chuyển sang Bài…
               </option>
-              <option value="__none__">-- Bỏ khỏi Bài --</option>
+              <option value="__none__" className="bg-surface text-fg">
+                -- Bỏ khỏi Bài --
+              </option>
               {lessons.map((lesson) => (
-                <option key={lesson.id} value={lesson.id}>
+                <option key={lesson.id} value={lesson.id} className="bg-surface text-fg">
                   {lesson.name}
                 </option>
               ))}

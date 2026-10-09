@@ -8,7 +8,7 @@ import { SpeakButton } from "@/components/SpeakButton";
 type Lesson = { id: string; name: string };
 
 const inputClass =
-  "rounded-lg border border-line px-3 py-2 text-sm placeholder:text-faint focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
+  "rounded-lg border border-line bg-surface text-fg px-3 py-2 text-sm placeholder:text-faint focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
 
 const labelClass = "text-sm font-medium text-fg-soft";
 
@@ -188,9 +188,11 @@ export function WordForm({
           }
           className={inputClass}
         >
-          <option value="">-- Không chọn --</option>
+          <option value="" className="bg-surface text-fg">
+            -- Không chọn --
+          </option>
           {lessons.map((lesson) => (
-            <option key={lesson.id} value={lesson.id}>
+            <option key={lesson.id} value={lesson.id} className="bg-surface text-fg">
               {lesson.name}
             </option>
           ))}
