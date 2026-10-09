@@ -8,6 +8,7 @@
    Component chỉ nên dùng các lớp bg-surface / text-fg / border-line ... thay vì
    gọi thẳng slate-xxx, để đổi theme là đổi ở một chỗ. */
 :root {
+  color-scheme: light; /* báo trình duyệt vẽ đúng các thành phần gốc (dropdown, thanh cuộn...) */
   --bg: #f8fafc; /* nền trang */
   --surface: #ffffff; /* nền thẻ / ô nhập */
   --surface-2: #f1f5f9; /* nền phụ (nút xám, pill) */
@@ -21,6 +22,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    color-scheme: dark;
     --bg: #0b1120;
     --surface: #131c2e;
     --surface-2: #1e293b;
