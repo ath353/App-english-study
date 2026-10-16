@@ -62,7 +62,7 @@ export function LessonManager({ lessons }: { lessons: Lesson[] }) {
       </form>
 
       {lessons.length > 0 && (
-        <ul className="flex flex-wrap gap-2">
+        <ul className="flex max-h-56 flex-wrap gap-2 overflow-y-auto pr-1 scrollbar-thin">
           {lessons.map((lesson) => (
             <li
               key={lesson.id}

@@ -29,7 +29,7 @@ export function LessonTabs({
   }
 
   function pillClass(active: boolean) {
-    return `rounded-full px-3 py-1.5 text-sm font-medium ${
+    return `shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium ${
       active
         ? "bg-indigo-600 text-white"
         : "bg-surface-2 text-fg-soft hover:bg-surface-2-hover"
@@ -39,7 +39,7 @@ export function LessonTabs({
   if (lessons.length === 0 && unclassifiedCount === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
       <Link
         href={buildHref(undefined)}
         scroll={false}
