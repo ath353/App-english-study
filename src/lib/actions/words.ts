@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/lib/auth";
+import { parseBulkLine, type BulkRow } from "@/lib/bulkImport";
 import { lookupWord } from "@/lib/dictionary";
 import { prisma } from "@/lib/prisma";
 
@@ -162,49 +163,79 @@ export async function updateWord(
 // Giới hạn số từ cho mỗi lần nhập hàng loạt — tránh dán nhầm hàng chục nghìn dòng
 // làm phình database hoặc quá thời gian xử lý. Cần nhiều hơn thì chia làm nhiều lần.
 const MAX_BULK_TERMS = 300;
-const MAX_TERM_LENGTH = 100;
 
+// Mỗi dòng là 1 từ trơn, hoặc dòng đầy đủ "từ | nghĩa | IPA | loại từ | câu ví dụ"
+// (xem parseBulkLine). Từ mới thì tạo; từ đã có thì chỉ điền vào ô còn trống,
+// không bao giờ ghi đè dữ liệu đang có.
 export async function bulkCreateWords(formData: FormData) {
   const userId = await requireUserId();
   const rawTerms = String(formData.get("terms") ?? "");
   const rawLessonId = String(formData.get("lessonId") ?? "").trim() || null;
 
-  const lines = rawTerms
+  const rows = rawTerms
     .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0 && line.length <= MAX_TERM_LENGTH);
+    .map(parseBulkLine)
+    .filter((row): row is BulkRow => row !== null);
 
-  if (lines.length > MAX_BULK_TERMS) {
+  if (rows.length > MAX_BULK_TERMS) {
     throw new Error(
-      `Mỗi lần chỉ nhập tối đa ${MAX_BULK_TERMS} từ. Bạn đang có ${lines.length} dòng — hãy chia nhỏ ra.`,
+      `Mỗi lần chỉ nhập tối đa ${MAX_BULK_TERMS} từ. Bạn đang có ${rows.length} dòng — hãy chia nhỏ ra.`,
     );
   }
 
   // Bỏ trùng lặp ngay trong danh sách vừa dán (không phân biệt hoa/thường)
   const seen = new Set<string>();
-  const uniqueLines = lines.filter((line) => {
-    const key = line.toLowerCase();
+  const uniqueRows = rows.filter((row) => {
+    const key = row.term.toLowerCase();
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
 
-  // Bỏ tiếp những từ user đã có sẵn trong danh sách
   const existing = await prisma.word.findMany({
     where: { userId },
-    select: { term: true },
+    select: {
+      id: true,
+      term: true,
+      meaning: true,
+      ipa: true,
+      definitionEn: true,
+      example: true,
+    },
   });
-  const existingKeys = new Set(existing.map((w) => w.term.toLowerCase()));
-  const terms = uniqueLines.filter(
-    (line) => !existingKeys.has(line.toLowerCase()),
-  );
+  const existingByKey = new Map(existing.map((w) => [w.term.toLowerCase(), w]));
 
   const lessonId = await resolveLessonId(userId, rawLessonId);
 
-  if (terms.length > 0) {
+  const newRows = uniqueRows.filter(
+    (row) => !existingByKey.has(row.term.toLowerCase()),
+  );
+  if (newRows.length > 0) {
     await prisma.word.createMany({
-      data: terms.map((term) => ({ userId, term, lessonId })),
+      data: newRows.map((row) => ({ userId, lessonId, ...row })),
     });
+  }
+
+  // Từ đã có: chỉ bổ sung ô đang trống (không đổi Bài, không ghi đè)
+  const fills = uniqueRows.flatMap((row) => {
+    const w = existingByKey.get(row.term.toLowerCase());
+    if (!w) return [];
+    const data = {
+      meaning: !w.meaning && row.meaning ? row.meaning : undefined,
+      ipa: !w.ipa && row.ipa ? row.ipa : undefined,
+      definitionEn:
+        !w.definitionEn && row.definitionEn ? row.definitionEn : undefined,
+      example: !w.example && row.example ? row.example : undefined,
+    };
+    const hasChange = Object.values(data).some((v) => v !== undefined);
+    return hasChange ? [{ id: w.id, data }] : [];
+  });
+  if (fills.length > 0) {
+    await prisma.$transaction(
+      fills.map(({ id, data }) =>
+        prisma.word.updateMany({ where: { id, userId }, data }),
+      ),
+    );
   }
 
   revalidatePath("/words");

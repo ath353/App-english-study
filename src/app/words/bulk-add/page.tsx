@@ -35,12 +35,27 @@ export default async function BulkAddWordsPage({
         </Link>
       </div>
 
-      <p className="text-sm text-muted">
-        Dán danh sách từ, mỗi dòng 1 từ. Các từ sẽ được lưu ngay lập tức
-        (chưa có nghĩa/IPA/ví dụ). Sau đó ở trang Từ vựng bấm nút{" "}
-        <span className="font-medium">&quot;✨ Điền tự động ... từ chưa có nghĩa&quot;</span>{" "}
-        để tra từ điển điền hàng loạt, rồi soát lại từng nghĩa.
-      </p>
+      <div className="flex flex-col gap-2 text-sm text-muted">
+        <p>Mỗi dòng 1 từ. Có 2 cách viết, trộn lẫn được:</p>
+        <ul className="list-disc space-y-1 pl-5">
+          <li>
+            Chỉ ghi từ, vd <code className="font-mono text-fg">apple</code>,
+            rồi ở trang Từ vựng bấm{" "}
+            <span className="font-medium">&quot;✨ Điền tự động&quot;</span>.
+          </li>
+          <li>
+            Ghi đầy đủ, ngăn bởi dấu <code className="font-mono text-fg">|</code>:{" "}
+            <code className="font-mono text-fg">
+              từ | nghĩa | IPA | loại từ | câu Anh / câu Việt
+            </code>
+            . Cột nào không có thì để trống.
+          </li>
+        </ul>
+        <p>
+          Từ đã có sẵn trong danh sách sẽ không bị tạo trùng — chỉ được điền
+          thêm vào những ô còn trống, không ghi đè nội dung cũ.
+        </p>
+      </div>
 
       <form
         action={bulkCreateWords}
@@ -55,7 +70,9 @@ export default async function BulkAddWordsPage({
             name="terms"
             required
             rows={12}
-            placeholder={"apple\nbanana\ncomputer\n..."}
+            placeholder={
+              "apple\nthrow away | vứt đi | θroʊ əˈweɪ | v | Be throwing away some garbage / Vứt rác vào thùng\n..."
+            }
             className="rounded-lg border border-line px-3 py-2 text-sm font-mono focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
         </div>
